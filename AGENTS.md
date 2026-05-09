@@ -23,3 +23,18 @@ See `CONTEXT.md` for strict terminology:
 4. Follow the Conventional Commits specification for commit messages.
 5. Branch names and pull request titles must be clear, descriptive, and easy to understand.
 6. Issue titles must be written in natural language. Do not use Conventional Commit format for issues. Conventional Commits are allowed only for commits and pull request titles.
+
+## Conventional Commits Examples
+
+Use these prefixes for **commits and PR titles only**. Never include issue numbers in the title; put `Closes #<n>` in the PR body instead.
+
+| Type | Example |
+|------|---------|
+| `feat` | `feat: add runtime health-check endpoint` |
+| `fix` | `fix: resolve CORS failure on API health endpoint` |
+| `refactor` | `refactor: extract health schema to shared package` |
+| `docs` | `docs: add ADR for NATS message broker` |
+| `test` | `test: cover runtime state machine with unit tests` |
+| `chore` | `chore: update Biome config to v2` |
+| `build` | `build: add multi-stage Dockerfile for web` |
+| `ci` | `ci: add GitHub Actions lint and test workflow` |
