@@ -7,8 +7,6 @@ dist/
 .build/
 .output/
 target/
-routeTree.gen.ts
-.turbo/
 
 # Environment variables
 .env

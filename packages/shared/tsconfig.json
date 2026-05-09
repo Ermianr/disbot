@@ -1,4 +1,0 @@
-{
-  "extends": "@disbot/typescript-config/base.json",
-  "include": ["src/**/*"]
-}
