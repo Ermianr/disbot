@@ -23,6 +23,7 @@ See `CONTEXT.md` for strict terminology:
 4. Follow the Conventional Commits specification for commit messages.
 5. Branch names and pull request titles must be clear, descriptive, and easy to understand.
 6. Issue titles must be written in natural language. Do not use Conventional Commit format for issues. Conventional Commits are allowed only for commits and pull request titles.
+7. Your responsibility is to create pull requests and link them to the corresponding issues. Never merge a pull request yourself under any circumstances.
 
 ## Conventional Commits Examples
 
