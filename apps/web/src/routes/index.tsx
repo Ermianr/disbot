@@ -1,7 +1,8 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getHealth } from "../lib/api";
 
-export function IndexComponent() {
+function IndexComponent() {
   const [status, setStatus] = useState<string>("loading");
 
   useEffect(() => {
@@ -13,3 +14,7 @@ export function IndexComponent() {
 
   return <div>API Status: {status}</div>;
 }
+
+export const Route = createFileRoute("/")({
+  component: IndexComponent,
+});

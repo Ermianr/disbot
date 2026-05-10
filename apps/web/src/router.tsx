@@ -1,22 +1,5 @@
-import {
-  createRootRoute,
-  createRoute,
-  createRouter,
-} from "@tanstack/react-router";
-import { RootComponent } from "./routes/__root";
-import { IndexComponent } from "./routes/index";
-
-const rootRoute = createRootRoute({
-  component: RootComponent,
-});
-
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-  component: IndexComponent,
-});
-
-const routeTree = rootRoute.addChildren([indexRoute]);
+import { createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
   return createRouter({ routeTree });
