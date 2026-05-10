@@ -37,7 +37,12 @@ describe("getHealth", () => {
 describe("getBots", () => {
   it("fetches GET /bots and returns the parsed list", async () => {
     const bots = [
-      { id: "1", name: "Alpha", createdAt: "2026-05-09T00:00:00Z" },
+      {
+        id: "1",
+        name: "Alpha",
+        createdAt: "2026-05-09T00:00:00Z",
+        updatedAt: "2026-05-09T00:00:00Z",
+      },
     ];
     mockFetch(() =>
       Promise.resolve({
@@ -63,7 +68,12 @@ describe("getBots", () => {
 
 describe("createBot", () => {
   it("posts to /bots with the name and returns the created bot", async () => {
-    const bot = { id: "1", name: "Alpha", createdAt: "2026-05-09T00:00:00Z" };
+    const bot = {
+      id: "1",
+      name: "Alpha",
+      createdAt: "2026-05-09T00:00:00Z",
+      updatedAt: "2026-05-09T00:00:00Z",
+    };
     mockFetch(() =>
       Promise.resolve({
         ok: true,
