@@ -4,9 +4,11 @@ COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
 COPY apps/orchestrator ./apps/orchestrator
 COPY apps/runtime ./apps/runtime
-RUN cargo build --release -p disbot-runtime
+RUN cargo build --release --locked -p disbot-runtime
 
 FROM debian:bookworm-slim AS runtime
+RUN groupadd --system app && useradd --system --gid app --home /app app
 WORKDIR /app
-COPY --from=builder /usr/src/app/target/release/disbot-runtime /usr/local/bin/disbot-runtime
+COPY --from=builder --chown=app:app /usr/src/app/target/release/disbot-runtime /usr/local/bin/disbot-runtime
+USER app
 CMD ["disbot-runtime"]
