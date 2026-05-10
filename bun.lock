@@ -39,6 +39,14 @@
         "vitest": "^4.1.5",
       },
     },
+    "apps/orchestrator": {
+      "name": "@disbot/orchestrator",
+      "version": "0.0.1",
+    },
+    "apps/runtime": {
+      "name": "@disbot/runtime",
+      "version": "0.0.1",
+    },
     "apps/web": {
       "name": "@disbot/web",
       "version": "0.0.1",
@@ -172,6 +180,10 @@
     "@disbot/api": ["@disbot/api@workspace:apps/api"],
 
     "@disbot/database": ["@disbot/database@workspace:packages/database"],
+
+    "@disbot/orchestrator": ["@disbot/orchestrator@workspace:apps/orchestrator"],
+
+    "@disbot/runtime": ["@disbot/runtime@workspace:apps/runtime"],
 
     "@disbot/shared": ["@disbot/shared@workspace:packages/shared"],
 

@@ -1,0 +1,9 @@
+{
+  "name": "@disbot/runtime",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "cargo build --release -p disbot-runtime",
+    "test": "cargo test -p disbot-runtime"
+  }
+}

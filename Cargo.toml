@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/shared", "crates/codegen"]
+members = ["apps/orchestrator", "apps/runtime", "crates/shared", "crates/codegen"]
 
 [workspace.package]
 edition = "2021"

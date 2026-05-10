@@ -20,6 +20,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "disbot-orchestrator"
+version = "0.0.1"
+dependencies = [
+ "disbot-shared",
+ "serde_json",
+]
+
+[[package]]
+name = "disbot-runtime"
+version = "0.0.1"
+dependencies = [
+ "disbot-shared",
+ "serde_json",
+]
+
+[[package]]
 name = "disbot-shared"
 version = "0.0.1"
 dependencies = [
