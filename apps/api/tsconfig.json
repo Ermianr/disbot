@@ -1,9 +1,12 @@
 {
   "extends": "@disbot/typescript-config/base.json",
   "compilerOptions": {
-    "rootDir": "./src",
+    "composite": true,
     "outDir": "./dist",
-    "types": ["bun-types", "node"]
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["bun", "node"]
   },
   "include": ["src/**/*"]
 }
