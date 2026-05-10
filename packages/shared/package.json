@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "biome check .",
-    "lint:fix": "biome check --write ."
+    "lint:fix": "biome check --write .",
+    "generate:rust-types": "bun run scripts/generate-rust-types.ts",
+    "verify:rust-types": "bun run scripts/verify-rust-types.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"
