@@ -9,13 +9,11 @@
         "@tanstack/react-router": "^1.169.2",
         "@tanstack/react-start": "^1.167.65",
         "@types/bun": "^1.3.13",
-        "@types/js-yaml": "^4.0.9",
         "@types/node": "^25.6.2",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
         "hono": "^4.12.18",
-        "js-yaml": "^4.1.1",
         "jsdom": "^29.1.1",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
@@ -98,6 +96,18 @@
     "packages/typescript-config": {
       "name": "@disbot/typescript-config",
       "version": "0.0.0",
+    },
+    "tests": {
+      "name": "@disbot/infra-tests",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@disbot/typescript-config": "workspace:*",
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^25.6.2",
+        "js-yaml": "^4.1.1",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.5",
+      },
     },
   },
   "packages": {
@@ -182,6 +192,8 @@
     "@disbot/api": ["@disbot/api@workspace:apps/api"],
 
     "@disbot/database": ["@disbot/database@workspace:packages/database"],
+
+    "@disbot/infra-tests": ["@disbot/infra-tests@workspace:tests"],
 
     "@disbot/orchestrator": ["@disbot/orchestrator@workspace:apps/orchestrator"],
 

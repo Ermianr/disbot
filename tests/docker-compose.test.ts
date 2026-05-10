@@ -24,6 +24,12 @@ const REPO_ROOT = resolve(__dirname, "..");
 const loadCompose = (file: string): ComposeFile =>
   yaml.load(readFileSync(resolve(REPO_ROOT, file), "utf8")) as ComposeFile;
 
+const getService = (compose: ComposeFile, name: string): ComposeService => {
+  const svc = compose.services[name];
+  if (!svc) throw new Error(`compose is missing required service "${name}"`);
+  return svc;
+};
+
 const parseEnvExampleKeys = (text: string): Set<string> => {
   const keys = new Set<string>();
   for (const rawLine of text.split(/\r?\n/)) {
@@ -41,7 +47,10 @@ const collectEnvVarReferences = (raw: string): Set<string> => {
   const pattern = /\$\{([A-Z_][A-Z0-9_]*)(?:[:?-][^}]*)?\}/g;
   let match: RegExpExecArray | null;
   // biome-ignore lint/suspicious/noAssignInExpressions: idiomatic regex loop
-  while ((match = pattern.exec(raw)) !== null) refs.add(match[1]);
+  while ((match = pattern.exec(raw)) !== null) {
+    const name = match[1];
+    if (name) refs.add(name);
+  }
   return refs;
 };
 
@@ -61,13 +70,13 @@ describe("docker-compose.yml (production)", () => {
     service,
     containerPath,
   }) => {
-    const svc = compose.services[service];
+    const svc = getService(compose, service);
     const mounts = svc.volumes ?? [];
     const dataMount = mounts.find((m) => m.endsWith(`:${containerPath}`));
     if (!dataMount)
       throw new Error(`${service} must mount a volume at ${containerPath}`);
 
-    const namedVolume = dataMount.split(":")[0];
+    const namedVolume = dataMount.split(":")[0] ?? "";
     expect(
       namedVolume.startsWith("/") || namedVolume.startsWith("."),
       `${service} must use a NAMED volume (got bind mount: ${namedVolume})`,
@@ -93,20 +102,16 @@ describe("docker-compose.yml (production)", () => {
     service,
     deps,
   }) => {
-    const dependsOn = compose.services[service].depends_on;
-    expect(dependsOn, `${service} must declare depends_on`).toBeDefined();
-    expect(
-      Array.isArray(dependsOn),
-      `${service}.depends_on must use long form so it can express health conditions`,
-    ).toBe(false);
+    const dependsOn = getService(compose, service).depends_on;
+    if (!dependsOn) throw new Error(`${service} must declare depends_on`);
+    if (Array.isArray(dependsOn))
+      throw new Error(
+        `${service}.depends_on must use long form so it can express health conditions`,
+      );
     for (const [dep, condition] of Object.entries(deps)) {
-      expect(
-        (dependsOn as Record<string, { condition: string }>)[dep],
-        `${service} must depend on ${dep}`,
-      ).toBeDefined();
-      expect(
-        (dependsOn as Record<string, { condition: string }>)[dep].condition,
-      ).toBe(condition);
+      const entry = dependsOn[dep];
+      if (!entry) throw new Error(`${service} must depend on ${dep}`);
+      expect(entry.condition).toBe(condition);
     }
   });
 
@@ -118,7 +123,7 @@ describe("docker-compose.yml (production)", () => {
     "web",
   ])("%s declares a healthcheck so dependents can wait on it", (service) => {
     expect(
-      compose.services[service].healthcheck,
+      getService(compose, service).healthcheck,
       `${service} needs a healthcheck`,
     ).toBeDefined();
   });
@@ -128,7 +133,7 @@ describe("docker-compose.yml (production)", () => {
     { service: "web", dockerfile: "apps/web/Dockerfile" },
     { service: "orchestrator", dockerfile: "apps/orchestrator/Dockerfile" },
   ])("$service builds from $dockerfile", ({ service, dockerfile }) => {
-    const build = compose.services[service].build as
+    const build = getService(compose, service).build as
       | { context?: string; dockerfile?: string }
       | string
       | undefined;
@@ -143,7 +148,7 @@ describe("docker-compose.yml (production)", () => {
   });
 
   it("api receives a DATABASE_URL targeting the postgres service (not localhost)", () => {
-    const env = compose.services.api.environment as
+    const env = getService(compose, "api").environment as
       | Record<string, string>
       | undefined;
     if (!env) throw new Error("api must declare an environment block");
@@ -177,7 +182,7 @@ describe("docker-compose.yml (production)", () => {
   });
 
   it("orchestrator mounts the host Docker socket so it can spawn Runtime containers", () => {
-    const orchestrator = compose.services.orchestrator;
+    const orchestrator = getService(compose, "orchestrator");
     const mounts = orchestrator.volumes ?? [];
     const socketMount = mounts.find((m) => m.includes("/var/run/docker.sock"));
     expect(
@@ -190,7 +195,7 @@ describe("docker-compose.yml (production)", () => {
     "api",
     "web",
   ])("%s uses expose (not ports) so Dokploy controls public routing", (service) => {
-    const svc = compose.services[service];
+    const svc = getService(compose, service);
     expect(svc.expose, `${service} must declare expose`).toBeDefined();
     expect(
       svc.expose?.length,
