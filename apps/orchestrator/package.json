@@ -1,0 +1,9 @@
+{
+  "name": "@disbot/orchestrator",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "cargo build --release -p disbot-orchestrator",
+    "test": "cargo test -p disbot-orchestrator"
+  }
+}
