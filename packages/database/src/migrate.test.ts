@@ -22,8 +22,6 @@ describe("bots migration", () => {
     );
     const columnNames = result.rows.map((r) => r.column_name);
 
-    expect(columnNames).toEqual(
-      expect.arrayContaining(["id", "name", "created_at"]),
-    );
+    expect(columnNames).toEqual(["id", "name", "created_at"]);
   });
 });
