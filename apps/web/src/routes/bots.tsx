@@ -1,8 +1,9 @@
+import { createFileRoute } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { type Bot, createBot, getBots } from "../lib/api";
 
-export function BotsComponent() {
+function BotsComponent() {
   const [bots, setBots] = useState<Bot[] | null>(null);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -60,3 +61,7 @@ export function BotsComponent() {
     </div>
   );
 }
+
+export const Route = createFileRoute("/bots")({
+  component: BotsComponent,
+});
