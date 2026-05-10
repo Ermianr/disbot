@@ -24,6 +24,8 @@ See `CONTEXT.md` for strict terminology:
 5. Branch names and pull request titles must be clear, descriptive, and easy to understand.
 6. Issue titles must be written in natural language. Do not use Conventional Commit format for issues. Conventional Commits are allowed only for commits and pull request titles.
 7. Your responsibility is to create pull requests and link them to the corresponding issues. Never merge a pull request yourself under any circumstances.
+8. Prefer self-explanatory code over comments: clear names, small functions, and types do most of the documenting. Add comments only to explain *why* something is done when it isn't obvious from the code (workarounds, business rules, non-obvious constraints, perf trade-offs). Reserve full doc comments (TSDoc / rustdoc) for public APIs of shared/published packages in the monorepo.
+9. Pin dependencies via lockfiles (Cargo.lock, pnpm-lock.yaml) and keep versions unified across the workspace. Update dependencies on a scheduled cadence using Renovate/Dependabot, never blindly bump to latest — review breaking changes (semver major) and ensure CI passes.
 
 ## Conventional Commits Examples
 
