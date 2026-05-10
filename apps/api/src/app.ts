@@ -1,5 +1,5 @@
 import { createBot, type Database, listBots } from "@disbot/database";
-import { CreateBotRequest } from "@disbot/shared";
+import { CreateBotRequest } from "@disbot/shared/api";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
