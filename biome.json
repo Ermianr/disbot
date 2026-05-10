@@ -11,7 +11,7 @@
       "!**/dist",
       "!**/.turbo",
       "!**/routeTree.gen.ts",
-      "!**/drizzle/meta/**"
+      "!**/drizzle/meta"
     ]
   },
   "linter": {
