@@ -2,6 +2,7 @@ export type Bot = {
   id: string;
   name: string;
   createdAt: string;
+  updatedAt: string;
 };
 
 export async function getHealth(apiUrl: string) {

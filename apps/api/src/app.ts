@@ -1,9 +1,14 @@
 import type { Database } from "@disbot/database";
 import { CreateBotRequest } from "@disbot/shared/api";
+import { BotConfig } from "@disbot/shared/dsl";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { z } from "zod";
 import { createBots } from "./bot";
+import { invalidRequest, notFound } from "./errors";
 import { validateJson } from "./validate";
+
+const UuidParam = z.uuid();
 
 export type AppDeps = {
   db: Database;
@@ -22,13 +27,34 @@ export function createApp({ db }: AppDeps) {
   app.post("/bots", async (c) => {
     const result = await validateJson(c, CreateBotRequest);
     if (!result.ok) return result.response;
-    const bot = await bots.create({ name: result.data.name });
+    const bot = await bots.create({
+      name: result.data.name,
+      config: result.data.config,
+    });
     return c.json(bot, 201);
   });
 
   app.get("/bots", async (c) => {
     const all = await bots.list();
     return c.json(all);
+  });
+
+  app.get("/bots/:id", async (c) => {
+    const parsedId = UuidParam.safeParse(c.req.param("id"));
+    if (!parsedId.success) return invalidRequest(c);
+    const bot = await bots.get(parsedId.data);
+    if (!bot) return notFound(c);
+    return c.json(bot);
+  });
+
+  app.put("/bots/:id/config", async (c) => {
+    const parsedId = UuidParam.safeParse(c.req.param("id"));
+    if (!parsedId.success) return invalidRequest(c);
+    const body = await validateJson(c, BotConfig);
+    if (!body.ok) return body.response;
+    const bot = await bots.updateConfig(parsedId.data, body.data);
+    if (!bot) return notFound(c);
+    return c.json(bot);
   });
 
   return app;

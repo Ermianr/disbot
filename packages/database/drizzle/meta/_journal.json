@@ -8,6 +8,13 @@
       "when": 1778373008174,
       "tag": "0000_simple_sharon_carter",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778440075321,
+      "tag": "0001_perfect_goliath",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { BOT_CONFIG_EMPTY, type BotConfig } from "@disbot/shared/dsl";
+import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const bots = pgTable("bots", {
   id: uuid("id")
@@ -9,7 +10,15 @@ export const bots = pgTable("bots", {
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
+  config: jsonb("config")
+    .$type<BotConfig>()
+    .notNull()
+    .default(BOT_CONFIG_EMPTY),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export type Bot = typeof bots.$inferSelect;
 export type NewBot = typeof bots.$inferInsert;
+export type BotSummary = Pick<Bot, "id" | "name" | "createdAt" | "updatedAt">;

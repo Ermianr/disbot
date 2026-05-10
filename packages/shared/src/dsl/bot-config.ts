@@ -24,3 +24,5 @@ export const BotConfig = z
   .meta({ title: "BotConfig" });
 
 export type BotConfig = z.infer<typeof BotConfig>;
+
+export const BOT_CONFIG_EMPTY: BotConfig = { triggers: [] };
