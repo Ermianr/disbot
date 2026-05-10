@@ -1,5 +1,7 @@
 fn main() {
-    println!("orchestrator: scaffold — no-op");
+    println!("orchestrator: scaffold — no-op, idling");
+    // Block forever so the container stays running until the implementation lands.
+    std::thread::park();
 }
 
 #[cfg(test)]

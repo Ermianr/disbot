@@ -97,6 +97,18 @@
       "name": "@disbot/typescript-config",
       "version": "0.0.0",
     },
+    "tests": {
+      "name": "@disbot/infra-tests",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@disbot/typescript-config": "workspace:*",
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^25.6.2",
+        "js-yaml": "^4.1.1",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.5",
+      },
+    },
   },
   "packages": {
     "@asamuzakjp/css-color": ["@asamuzakjp/css-color@5.1.11", "", { "dependencies": { "@asamuzakjp/generational-cache": "^1.0.1", "@csstools/css-calc": "^3.2.0", "@csstools/css-color-parser": "^4.1.0", "@csstools/css-parser-algorithms": "^4.0.0", "@csstools/css-tokenizer": "^4.0.0" } }, "sha512-KVw6qIiCTUQhByfTd78h2yD1/00waTmm9uy/R7Ck/ctUyAPj+AEDLkQIdJW0T8+qGgj3j5bpNKK7Q3G+LedJWg=="],
@@ -180,6 +192,8 @@
     "@disbot/api": ["@disbot/api@workspace:apps/api"],
 
     "@disbot/database": ["@disbot/database@workspace:packages/database"],
+
+    "@disbot/infra-tests": ["@disbot/infra-tests@workspace:tests"],
 
     "@disbot/orchestrator": ["@disbot/orchestrator@workspace:apps/orchestrator"],
 
@@ -366,6 +380,8 @@
     "@types/deep-eql": ["@types/deep-eql@4.0.2", "", {}, "sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw=="],
 
     "@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "@types/js-yaml": ["@types/js-yaml@4.0.9", "", {}, "sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg=="],
 
     "@types/node": ["@types/node@25.6.2", "", { "dependencies": { "undici-types": "~7.19.0" } }, "sha512-sokuT28dxf9JT5Kady1fsXOvI4HVpjZa95NKT5y9PNTIrs2AsobR4GFAA90ZG8M+nxVRLysCXsVj6eGC7Vbrlw=="],
 
