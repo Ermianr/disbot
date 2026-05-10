@@ -64,6 +64,20 @@ describe("POST /bots", () => {
 
     expect(res.status).toBe(400);
   });
+
+  it("returns the canonical 400 shape when the body is not valid JSON", async () => {
+    const db = await freshDb();
+    const app = createApp({ db });
+
+    const res = await app.request("/bots", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "not json",
+    });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid_request" });
+  });
 });
 
 describe("GET /bots", () => {

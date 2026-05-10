@@ -1,6 +1,6 @@
 import { desc } from "drizzle-orm";
-import { type Bot, bots } from "../schema/bots";
-import type { Database } from "../types";
+import type { Database } from "./client";
+import { type Bot, bots } from "./schema/bots";
 
 export async function createBot(
   db: Database,
