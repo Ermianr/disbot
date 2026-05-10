@@ -12,4 +12,3 @@ path = "src/lib.rs"
 serde = { workspace = true }
 serde_json = { workspace = true }
 schemars = "0.8"
-regress = "0.10"

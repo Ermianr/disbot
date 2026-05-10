@@ -23,7 +23,6 @@ dependencies = [
 name = "disbot-shared"
 version = "0.0.1"
 dependencies = [
- "regress",
  "schemars",
  "serde",
  "serde_json",

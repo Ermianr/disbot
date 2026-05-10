@@ -44,7 +44,7 @@ if (codegen.status !== 0) {
   process.exit(codegen.status ?? 1);
 }
 
-const fmt = spawnSync("cargo", ["fmt", "--quiet", "-p", "disbot-shared"], {
+const fmt = spawnSync("rustfmt", ["--quiet", "--edition", "2021", outputPath], {
   cwd: repoRoot,
   stdio: "inherit",
 });

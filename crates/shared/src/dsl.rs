@@ -75,14 +75,18 @@ pub mod error {
 ///                },
 ///                "type": {
 ///                  "type": "string",
-///                  "const": "send_message"
+///                  "enum": [
+///                    "send_message"
+///                  ]
 ///                }
 ///              }
 ///            }
 ///          },
 ///          "event": {
 ///            "type": "string",
-///            "const": "message_create"
+///            "enum": [
+///              "message_create"
+///            ]
 ///          }
 ///        }
 ///      }
@@ -136,14 +140,18 @@ impl ::std::convert::From<&BotConfig> for BotConfig {
 ///          },
 ///          "type": {
 ///            "type": "string",
-///            "const": "send_message"
+///            "enum": [
+///              "send_message"
+///            ]
 ///          }
 ///        }
 ///      }
 ///    },
 ///    "event": {
 ///      "type": "string",
-///      "const": "message_create"
+///      "enum": [
+///        "message_create"
+///      ]
 ///    }
 ///  }
 ///}
@@ -152,11 +160,83 @@ impl ::std::convert::From<&BotConfig> for BotConfig {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 pub struct MessageCreateTrigger {
     pub actions: ::std::vec::Vec<SendMessageAction>,
-    pub event: ::std::string::String,
+    pub event: MessageCreateTriggerEvent,
 }
 impl ::std::convert::From<&MessageCreateTrigger> for MessageCreateTrigger {
     fn from(value: &MessageCreateTrigger) -> Self {
         value.clone()
+    }
+}
+///`MessageCreateTriggerEvent`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "message_create"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+pub enum MessageCreateTriggerEvent {
+    #[serde(rename = "message_create")]
+    MessageCreate,
+}
+impl ::std::convert::From<&Self> for MessageCreateTriggerEvent {
+    fn from(value: &MessageCreateTriggerEvent) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for MessageCreateTriggerEvent {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::MessageCreate => f.write_str("message_create"),
+        }
+    }
+}
+impl ::std::str::FromStr for MessageCreateTriggerEvent {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "message_create" => Ok(Self::MessageCreate),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for MessageCreateTriggerEvent {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for MessageCreateTriggerEvent {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for MessageCreateTriggerEvent {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 ///`SendMessageAction`
@@ -185,7 +265,9 @@ impl ::std::convert::From<&MessageCreateTrigger> for MessageCreateTrigger {
 ///    },
 ///    "type": {
 ///      "type": "string",
-///      "const": "send_message"
+///      "enum": [
+///        "send_message"
+///      ]
 ///    }
 ///  }
 ///}
@@ -197,7 +279,7 @@ pub struct SendMessageAction {
     #[serde(default = "defaults::send_message_action_on_error")]
     pub on_error: SendMessageActionOnError,
     #[serde(rename = "type")]
-    pub type_: ::std::string::String,
+    pub type_: SendMessageActionType,
 }
 impl ::std::convert::From<&SendMessageAction> for SendMessageAction {
     fn from(value: &SendMessageAction) -> Self {
@@ -285,6 +367,78 @@ impl ::std::convert::TryFrom<::std::string::String> for SendMessageActionOnError
 impl ::std::default::Default for SendMessageActionOnError {
     fn default() -> Self {
         SendMessageActionOnError::Stop
+    }
+}
+///`SendMessageActionType`
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "send_message"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+)]
+pub enum SendMessageActionType {
+    #[serde(rename = "send_message")]
+    SendMessage,
+}
+impl ::std::convert::From<&Self> for SendMessageActionType {
+    fn from(value: &SendMessageActionType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for SendMessageActionType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::SendMessage => f.write_str("send_message"),
+        }
+    }
+}
+impl ::std::str::FromStr for SendMessageActionType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        match value {
+            "send_message" => Ok(Self::SendMessage),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl ::std::convert::TryFrom<&str> for SendMessageActionType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&::std::string::String> for SendMessageActionType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: &::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<::std::string::String> for SendMessageActionType {
+    type Error = self::error::ConversionError;
+    fn try_from(
+        value: ::std::string::String,
+    ) -> ::std::result::Result<Self, self::error::ConversionError> {
+        value.parse()
     }
 }
 /// Generation of default values for serde.

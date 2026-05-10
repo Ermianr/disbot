@@ -4,7 +4,7 @@ const OnError = z.enum(["stop", "continue"]).default("stop");
 
 const SendMessageAction = z
   .object({
-    type: z.literal("send_message"),
+    type: z.enum(["send_message"]),
     content: z.string(),
     on_error: OnError,
   })
@@ -12,7 +12,7 @@ const SendMessageAction = z
 
 const MessageCreateTrigger = z
   .object({
-    event: z.literal("message_create"),
+    event: z.enum(["message_create"]),
     actions: z.array(SendMessageAction),
   })
   .meta({ title: "MessageCreateTrigger" });
