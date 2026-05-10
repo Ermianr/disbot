@@ -10,7 +10,7 @@ name = "disbot-codegen"
 path = "src/main.rs"
 
 [dependencies]
-typify = "0.4"
+typify = "0.6"
 schemars = "1.0"
 serde_json = { workspace = true }
 prettyplease = "0.2"
