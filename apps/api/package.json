@@ -13,8 +13,9 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
-    "hono": "^4.12.18",
-    "@disbot/shared": "workspace:*"
+    "@disbot/database": "workspace:*",
+    "@disbot/shared": "workspace:*",
+    "hono": "^4.12.18"
   },
   "devDependencies": {
     "@disbot/typescript-config": "workspace:*",
