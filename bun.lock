@@ -32,6 +32,7 @@
         "@disbot/database": "workspace:*",
         "@disbot/shared": "workspace:*",
         "hono": "^4.12.18",
+        "zod": "^4.4.3",
       },
       "devDependencies": {
         "@disbot/typescript-config": "workspace:*",

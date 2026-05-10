@@ -1,12 +1,13 @@
+import { freshDb } from "@disbot/database/testing";
 import { describe, expect, it } from "vitest";
-import { freshDb } from "../test-utils/fresh-db";
-import { createBot, listBots } from "./bots";
+import { createBots } from "./bot";
 
-describe("createBot", () => {
-  it("inserts a bot and returns it with id, name, and createdAt", async () => {
+describe("Bots.create", () => {
+  it("persists a bot and returns it with id, name, and createdAt", async () => {
     const db = await freshDb();
+    const bots = createBots({ db });
 
-    const bot = await createBot(db, { name: "Welcome Bot" });
+    const bot = await bots.create({ name: "Welcome Bot" });
 
     expect(bot.name).toBe("Welcome Bot");
     expect(bot.id).toMatch(
@@ -16,22 +17,24 @@ describe("createBot", () => {
   });
 });
 
-describe("listBots", () => {
+describe("Bots.list", () => {
   it("returns an empty array when no bots exist", async () => {
     const db = await freshDb();
+    const bots = createBots({ db });
 
-    const result = await listBots(db);
+    const result = await bots.list();
 
     expect(result).toEqual([]);
   });
 
   it("returns previously created bots, newest first", async () => {
     const db = await freshDb();
-    const first = await createBot(db, { name: "First" });
+    const bots = createBots({ db });
+    const first = await bots.create({ name: "First" });
     await new Promise((r) => setTimeout(r, 5));
-    const second = await createBot(db, { name: "Second" });
+    const second = await bots.create({ name: "Second" });
 
-    const result = await listBots(db);
+    const result = await bots.list();
 
     expect(result.map((b) => b.id)).toEqual([second.id, first.id]);
   });

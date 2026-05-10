@@ -1,7 +1,9 @@
-import { createBot, type Database, listBots } from "@disbot/database";
+import type { Database } from "@disbot/database";
 import { CreateBotRequest } from "@disbot/shared/api";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { createBots } from "./bot";
+import { validateJson } from "./validate";
 
 export type AppDeps = {
   db: Database;
@@ -9,6 +11,7 @@ export type AppDeps = {
 
 export function createApp({ db }: AppDeps) {
   const app = new Hono();
+  const bots = createBots({ db });
 
   app.use(cors());
 
@@ -17,17 +20,14 @@ export function createApp({ db }: AppDeps) {
   });
 
   app.post("/bots", async (c) => {
-    const raw = await c.req.json().catch(() => null);
-    const parsed = CreateBotRequest.safeParse(raw);
-    if (!parsed.success) {
-      return c.json({ error: "invalid_request" }, 400);
-    }
-    const bot = await createBot(db, { name: parsed.data.name });
+    const result = await validateJson(c, CreateBotRequest);
+    if (!result.ok) return result.response;
+    const bot = await bots.create({ name: result.data.name });
     return c.json(bot, 201);
   });
 
   app.get("/bots", async (c) => {
-    const all = await listBots(db);
+    const all = await bots.list();
     return c.json(all);
   });
 
