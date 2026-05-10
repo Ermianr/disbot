@@ -1,4 +1,5 @@
 node_modules
+**/node_modules
 Dockerfile*
 docker-compose*
 .dockerignore
@@ -14,5 +15,11 @@ helm-charts
 .idea
 coverage*
 dist
+**/dist
 .output
+**/.output
 target
+**/target
+**/.turbo
+**/.vite
+**/.vite-temp
