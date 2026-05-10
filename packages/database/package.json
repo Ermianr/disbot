@@ -17,7 +17,7 @@
     "db:migrate": "bun run src/cli/migrate.ts"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.2.14",
+    "@electric-sql/pglite": "^0.4.0",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.5"
   },
