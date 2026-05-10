@@ -25,4 +25,4 @@ export const BotConfig = z
 
 export type BotConfig = z.infer<typeof BotConfig>;
 
-export const BOT_CONFIG_EMPTY: BotConfig = BotConfig.parse({ triggers: [] });
+export const BOT_CONFIG_EMPTY: BotConfig = { triggers: [] };
