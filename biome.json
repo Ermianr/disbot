@@ -6,7 +6,13 @@
     "useIgnoreFile": false
   },
   "files": {
-    "includes": ["**", "!**/dist","!**/.turbo", "!**/routeTree.gen.ts"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/routeTree.gen.ts",
+      "!**/drizzle/meta/**"
+    ]
   },
   "linter": {
     "enabled": true,

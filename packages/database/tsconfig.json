@@ -1,0 +1,7 @@
+{
+  "extends": "@disbot/typescript-config/base.json",
+  "compilerOptions": {
+    "types": ["bun-types", "node"]
+  },
+  "include": ["src/**/*", "drizzle.config.ts"]
+}
