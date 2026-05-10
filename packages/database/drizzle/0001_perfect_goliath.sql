@@ -1,0 +1,2 @@
+ALTER TABLE "bots" ADD COLUMN "config" jsonb DEFAULT '{"triggers":[]}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "bots" ADD COLUMN "updated_at" timestamp with time zone DEFAULT now() NOT NULL;

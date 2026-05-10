@@ -9,7 +9,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_FOLDER = path.resolve(here, "..", "drizzle");
 
 describe("bots migration", () => {
-  it("creates a bots table with id, name, and created_at columns", async () => {
+  it("creates a bots table with id, name, created_at, config, and updated_at columns", async () => {
     const client = new PGlite();
     const db = drizzle(client);
 
@@ -22,6 +22,12 @@ describe("bots migration", () => {
     );
     const columnNames = result.rows.map((r) => r.column_name);
 
-    expect(columnNames).toEqual(["id", "name", "created_at"]);
+    expect(columnNames).toEqual([
+      "id",
+      "name",
+      "created_at",
+      "config",
+      "updated_at",
+    ]);
   });
 });
