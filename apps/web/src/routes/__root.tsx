@@ -4,6 +4,7 @@ import {
   Link,
   Outlet,
   Scripts,
+  useLocation,
   useRouter,
 } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
@@ -13,6 +14,7 @@ const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 function Header() {
   const router = useRouter();
+  const location = useLocation();
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +25,7 @@ function Header() {
 
   useEffect(() => {
     refresh();
-  }, [refresh]);
+  }, [refresh, location]);
 
   async function onLogout() {
     await logout(apiUrl).catch(() => undefined);

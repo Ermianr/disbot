@@ -46,9 +46,16 @@ export function createRedisSessionStore(
       if (!raw) return null;
       try {
         const parsed = JSON.parse(raw) as StoredSession;
+        if (typeof parsed.userId !== "string" || parsed.userId.length === 0) {
+          return null;
+        }
+        const createdAt = new Date(parsed.createdAt);
+        if (!Number.isFinite(createdAt.getTime())) {
+          return null;
+        }
         return {
           userId: parsed.userId,
-          createdAt: new Date(parsed.createdAt),
+          createdAt,
         };
       } catch {
         return null;

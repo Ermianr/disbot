@@ -49,10 +49,25 @@ const server = Bun.serve({
 console.log(`API running at http://localhost:${server.port}`);
 
 function parseSameSite(value: string | undefined): SameSiteOption {
-  if (value === "Strict" || value === "Lax" || value === "None") return value;
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === "strict") return "Strict";
+  if (normalized === "lax") return "Lax";
+  if (normalized === "none") return "None";
+  if (normalized) {
+    console.warn(
+      `Invalid COOKIE_SAMESITE value "${value}", defaulting to "Lax"`,
+    );
+  }
   return "Lax";
 }
 
 function parseSecure(value: string | undefined): boolean {
-  return value === "true" || value === "1";
+  const normalized = value?.trim().toLowerCase();
+  if (normalized === "true" || normalized === "1") return true;
+  if (normalized) {
+    console.warn(
+      `Invalid COOKIE_SECURE value "${value}", defaulting to false`,
+    );
+  }
+  return false;
 }

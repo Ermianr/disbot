@@ -13,6 +13,8 @@ function RegisterComponent() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const clearError = () => setError(null);
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -37,7 +39,7 @@ function RegisterComponent() {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => { clearError(); setEmail(e.target.value); }}
             required
             autoComplete="email"
           />
@@ -46,7 +48,7 @@ function RegisterComponent() {
           Username
           <input
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => { clearError(); setUsername(e.target.value); }}
             required
             minLength={3}
             maxLength={32}
@@ -59,7 +61,7 @@ function RegisterComponent() {
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { clearError(); setPassword(e.target.value); }}
             required
             minLength={8}
             maxLength={128}

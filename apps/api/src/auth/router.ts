@@ -71,9 +71,15 @@ export function createAuthRouter(deps: AuthDeps): Hono {
 
   router.post("/logout", async (c) => {
     const token = parseSessionToken(c.req.header("cookie") ?? null);
-    if (!token) return unauthorized(c);
+    if (!token) {
+      c.header("set-cookie", buildClearSessionCookie(cookieOptions));
+      return unauthorized(c);
+    }
     const session = await sessions.get(token);
-    if (!session) return unauthorized(c);
+    if (!session) {
+      c.header("set-cookie", buildClearSessionCookie(cookieOptions));
+      return unauthorized(c);
+    }
 
     await sessions.delete(token);
     c.header("set-cookie", buildClearSessionCookie(cookieOptions));
@@ -82,13 +88,20 @@ export function createAuthRouter(deps: AuthDeps): Hono {
 
   router.get("/me", async (c) => {
     const token = parseSessionToken(c.req.header("cookie") ?? null);
-    if (!token) return unauthorized(c);
+    if (!token) {
+      c.header("set-cookie", buildClearSessionCookie(cookieOptions));
+      return unauthorized(c);
+    }
     const session = await sessions.get(token);
-    if (!session) return unauthorized(c);
+    if (!session) {
+      c.header("set-cookie", buildClearSessionCookie(cookieOptions));
+      return unauthorized(c);
+    }
 
     const user = await findUserById(db, session.userId);
     if (!user) {
       await sessions.delete(token);
+      c.header("set-cookie", buildClearSessionCookie(cookieOptions));
       return unauthorized(c);
     }
 

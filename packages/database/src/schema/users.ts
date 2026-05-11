@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -24,7 +25,7 @@ export const users = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("users_email_unique").on(table.email),
+    uniqueIndex("users_email_unique").on(sql`LOWER(${table.email})`),
     uniqueIndex("users_username_unique").on(table.username),
   ],
 );

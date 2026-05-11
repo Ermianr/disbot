@@ -11,7 +11,7 @@ const getMeServer = createServerFn({ method: "GET" }).handler(async () => {
 
 export const Route = createFileRoute("/_auth")({
   beforeLoad: async () => {
-    const user = await getMeServer().catch(() => null);
+    const user = await getMeServer();
     if (user) throw redirect({ to: "/bots" });
   },
   component: AuthLayout,

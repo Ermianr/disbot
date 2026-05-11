@@ -13,6 +13,9 @@ function buildCookie(
   maxAge: number,
   options: CookieOptions,
 ): string {
+  if (options.sameSite === "None" && !options.secure) {
+    throw new Error("SameSite=None requires Secure");
+  }
   const parts = [
     `${SESSION_COOKIE_NAME}=${value}`,
     "Path=/",
