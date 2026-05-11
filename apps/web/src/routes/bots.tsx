@@ -8,14 +8,13 @@ import { forwardCookie } from "../lib/api.server";
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const getMeServer = createServerFn({ method: "GET" }).handler(async () => {
-  return getMe(apiUrl, forwardCookie()).catch(() => null);
+  return getMe(apiUrl, forwardCookie());
 });
 
 function BotsComponent() {
   const [bots, setBots] = useState<Bot[] | null>(null);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   const refresh = useCallback(async () => {
     try {

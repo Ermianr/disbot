@@ -12,7 +12,10 @@ import { login } from "../lib/api";
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const LoginSearch = z.object({
-  redirect: z.string().startsWith("/").default("/bots"),
+  redirect: z
+    .string()
+    .regex(/^\/(?!\/)/, { message: "redirect must be a relative path" })
+    .default("/bots"),
 });
 
 function LoginComponent() {

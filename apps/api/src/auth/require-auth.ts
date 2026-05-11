@@ -14,7 +14,7 @@ export function requireAuth(
   sessions: SessionStore,
   cookieOptions: CookieOptions,
 ) {
-  return async (c: Context, next: Next) => {
+  return async (c: Context<{ Variables: AuthVariables }>, next: Next) => {
     const token = parseSessionToken(c.req.header("cookie") ?? null);
     if (!token) {
       c.header("set-cookie", buildClearSessionCookie(cookieOptions));
@@ -25,7 +25,7 @@ export function requireAuth(
       c.header("set-cookie", buildClearSessionCookie(cookieOptions));
       return c.json({ error: "unauthorized" }, 401);
     }
-    c.set("userId" as never, session.userId);
+    c.set("userId", session.userId);
     await next();
   };
 }
