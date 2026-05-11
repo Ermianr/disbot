@@ -33,7 +33,7 @@ describe("encrypt / decrypt round-trip", () => {
   it("throws when decrypting corrupted ciphertext", () => {
     const plain = "my-secret-discord-token";
     const cipher = encrypt(plain, MASTER_KEY);
-    const corrupted = cipher.slice(0, -4) + "XXXX";
+    const corrupted = `${cipher.slice(0, -4)}XXXX`;
 
     expect(() => decrypt(corrupted, MASTER_KEY)).toThrow();
   });
@@ -41,6 +41,8 @@ describe("encrypt / decrypt round-trip", () => {
   it("throws when the master key is not 32 bytes", () => {
     const shortKey = Buffer.from("too-short");
 
-    expect(() => encrypt("plain", shortKey)).toThrow("master key must be 32 bytes");
+    expect(() => encrypt("plain", shortKey)).toThrow(
+      "master key must be 32 bytes",
+    );
   });
 });

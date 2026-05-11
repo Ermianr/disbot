@@ -13,7 +13,7 @@ name = "disbot-codegen"
 version = "0.0.1"
 dependencies = [
  "prettyplease",
- "schemars 1.2.1",
+ "schemars 0.8.22",
  "serde_json",
  "syn",
  "typify",
