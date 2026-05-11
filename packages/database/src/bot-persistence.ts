@@ -1,5 +1,5 @@
 import type { BotConfig } from "@disbot/shared/dsl";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { Database } from "./client";
 import { type Bot, type BotSummary, bots } from "./schema/bots";
 
@@ -73,6 +73,45 @@ export async function updateBotStatus(
     .update(bots)
     .set({ status, updatedAt: sql`now()` })
     .where(and(eq(bots.id, id), eq(bots.userId, userId)))
+    .returning();
+  return row ?? null;
+}
+
+export async function enableBot(
+  db: Database,
+  userId: string,
+  id: string,
+): Promise<Bot | null> {
+  const [row] = await db
+    .update(bots)
+    .set({ status: "enabled", updatedAt: sql`now()` })
+    .where(
+      and(
+        eq(bots.id, id),
+        eq(bots.userId, userId),
+        isNotNull(bots.discordToken),
+        sql`${bots.status} IN ('draft', 'disabled')`,
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
+export async function disableBot(
+  db: Database,
+  userId: string,
+  id: string,
+): Promise<Bot | null> {
+  const [row] = await db
+    .update(bots)
+    .set({ status: "disabled", updatedAt: sql`now()` })
+    .where(
+      and(
+        eq(bots.id, id),
+        eq(bots.userId, userId),
+        sql`${bots.status} IN ('enabled', 'error', 'rate_limited')`,
+      ),
+    )
     .returning();
   return row ?? null;
 }

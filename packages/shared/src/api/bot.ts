@@ -23,13 +23,13 @@ export const BotStatus = z.enum([
 ]);
 
 export const PublicBot = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string(),
   status: BotStatus,
   hasToken: z.boolean(),
   config: BotConfig.optional(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 export type PublicBot = z.infer<typeof PublicBot>;

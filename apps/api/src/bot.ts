@@ -3,10 +3,11 @@ import {
   type BotSummary,
   createBot,
   type Database,
+  disableBot,
+  enableBot,
   getBotByIdAndOwner,
   listBots,
   updateBotConfig,
-  updateBotStatus,
   updateBotToken,
 } from "@disbot/database";
 import type { BotConfig } from "@disbot/shared/dsl";
@@ -65,30 +66,24 @@ export function createBots({
       return updateBotToken(db, userId, id, encrypted);
     },
     async enable(userId, id) {
-      const bot = await getBotByIdAndOwner(db, id, userId);
-      if (!bot) return { kind: "not_found" };
-      if (!bot.discordToken) {
-        return { kind: "conflict", reason: "bot_has_no_token" };
-      }
-      if (bot.status !== "draft" && bot.status !== "disabled") {
+      const updated = await enableBot(db, userId, id);
+      if (!updated) {
+        const bot = await getBotByIdAndOwner(db, id, userId);
+        if (!bot) return { kind: "not_found" };
+        if (!bot.discordToken) {
+          return { kind: "conflict", reason: "bot_has_no_token" };
+        }
         return { kind: "conflict", reason: "invalid_status_transition" };
       }
-      const updated = await updateBotStatus(db, userId, id, "enabled");
-      if (!updated) return { kind: "not_found" };
       return { kind: "ok", bot: updated };
     },
     async disable(userId, id) {
-      const bot = await getBotByIdAndOwner(db, id, userId);
-      if (!bot) return { kind: "not_found" };
-      if (
-        bot.status !== "enabled" &&
-        bot.status !== "error" &&
-        bot.status !== "rate_limited"
-      ) {
+      const updated = await disableBot(db, userId, id);
+      if (!updated) {
+        const bot = await getBotByIdAndOwner(db, id, userId);
+        if (!bot) return { kind: "not_found" };
         return { kind: "conflict", reason: "invalid_status_transition" };
       }
-      const updated = await updateBotStatus(db, userId, id, "disabled");
-      if (!updated) return { kind: "not_found" };
       return { kind: "ok", bot: updated };
     },
   };

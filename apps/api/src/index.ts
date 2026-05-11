@@ -20,8 +20,26 @@ if (!corsOrigin) {
   throw new Error("WEB_ORIGIN is required");
 }
 
+function decodeMasterKey(value: string): Buffer {
+  const hexPattern = /^[0-9a-fA-F]{64}$/;
+  if (hexPattern.test(value)) {
+    return Buffer.from(value, "hex");
+  }
+  const base64 = Buffer.from(value, "base64");
+  if (base64.length === 32) {
+    return base64;
+  }
+  const utf8 = Buffer.from(value, "utf-8");
+  if (utf8.length === 32) {
+    return utf8;
+  }
+  throw new Error(
+    "TOKEN_MASTER_KEY must be 32 bytes (64 hex chars, valid base64, or raw UTF-8)",
+  );
+}
+
 const tokenMasterKey = process.env.TOKEN_MASTER_KEY
-  ? Buffer.from(process.env.TOKEN_MASTER_KEY)
+  ? decodeMasterKey(process.env.TOKEN_MASTER_KEY)
   : null;
 if (!tokenMasterKey || tokenMasterKey.length !== 32) {
   throw new Error("TOKEN_MASTER_KEY is required and must be 32 bytes");
