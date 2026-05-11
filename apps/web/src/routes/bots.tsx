@@ -1,7 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
-import { type Bot, createBot, getBots } from "../lib/api";
+import { type Bot, createBot, getBots, getMe } from "../lib/api";
+import { forwardCookie } from "../lib/api.server";
+
+const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+const getMeServer = createServerFn({ method: "GET" }).handler(async () => {
+  return getMe(apiUrl, forwardCookie()).catch(() => null);
+});
 
 function BotsComponent() {
   const [bots, setBots] = useState<Bot[] | null>(null);
@@ -64,4 +72,10 @@ function BotsComponent() {
 
 export const Route = createFileRoute("/bots")({
   component: BotsComponent,
+  beforeLoad: async () => {
+    const user = await getMeServer();
+    if (!user) {
+      throw redirect({ to: "/login", search: { redirect: "/bots" } });
+    }
+  },
 });
