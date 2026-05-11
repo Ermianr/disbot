@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from "vitest";
-import { makeApp } from "../test/app-harness";
+import { makeApp, registerUser } from "../test/app-harness";
 
 describe("GET /health", () => {
   it("returns ok status", async () => {
@@ -14,12 +14,26 @@ describe("GET /health", () => {
 });
 
 describe("POST /bots", () => {
-  it("creates a bot and returns 201 with the persisted record", async () => {
+  it("returns 401 when no session cookie is sent", async () => {
     const { app } = await makeApp();
 
     const res = await app.request("/bots", {
       method: "POST",
       headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Welcome Bot" }),
+    });
+
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: "unauthorized" });
+  });
+
+  it("creates a bot and returns 201 with the persisted record", async () => {
+    const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
+
+    const res = await app.request("/bots", {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "Welcome Bot" }),
     });
 
@@ -38,10 +52,11 @@ describe("POST /bots", () => {
 
   it("returns 400 when the body is missing name", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
 
     const res = await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({}),
     });
 
@@ -50,10 +65,11 @@ describe("POST /bots", () => {
 
   it("returns 400 when name is an empty string", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
 
     const res = await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "" }),
     });
 
@@ -62,10 +78,11 @@ describe("POST /bots", () => {
 
   it("returns the canonical 400 shape when the body is not valid JSON", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
 
     const res = await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: "not json",
     });
 
@@ -75,6 +92,7 @@ describe("POST /bots", () => {
 
   it("persists and returns the provided config when one is supplied", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
     const config = {
       triggers: [
         {
@@ -86,7 +104,7 @@ describe("POST /bots", () => {
 
     const res = await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "Welcome Bot", config }),
     });
 
@@ -98,10 +116,11 @@ describe("POST /bots", () => {
 
   it("defaults config to an empty BotConfig when omitted", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
 
     const res = await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "Welcome Bot" }),
     });
 
@@ -113,10 +132,11 @@ describe("POST /bots", () => {
 
   it("returns 400 when config is structurally invalid", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
 
     const res = await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({
         name: "Welcome Bot",
         config: { triggers: [{ event: "unknown_event", actions: [] }] },
@@ -129,10 +149,20 @@ describe("POST /bots", () => {
 });
 
 describe("GET /bots", () => {
-  it("returns an empty array when no bots exist", async () => {
+  it("returns 401 when no session cookie is sent", async () => {
     const { app } = await makeApp();
 
     const res = await app.request("/bots");
+
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: "unauthorized" });
+  });
+
+  it("returns an empty array when no bots exist", async () => {
+    const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
+
+    const res = await app.request("/bots", { headers: { cookie } });
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual([]);
@@ -140,30 +170,70 @@ describe("GET /bots", () => {
 
   it("returns previously created bots", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
     await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "Alpha" }),
     });
     await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "Beta" }),
     });
 
-    const res = await app.request("/bots");
+    const res = await app.request("/bots", { headers: { cookie } });
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as Array<{ name: string }>;
     expect(body.map((b) => b.name).sort()).toEqual(["Alpha", "Beta"]);
   });
+
+  it("returns only bots belonging to the caller", async () => {
+    const { app } = await makeApp();
+    const alice = await registerUser(app);
+    const bob = await registerUser(app, {
+      email: "bob@example.com",
+      username: "bob",
+      password: "supersecret",
+    });
+    await app.request("/bots", {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: alice.cookie },
+      body: JSON.stringify({ name: "Alice's Bot" }),
+    });
+    await app.request("/bots", {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: bob.cookie },
+      body: JSON.stringify({ name: "Bob's Bot" }),
+    });
+
+    const res = await app.request("/bots", {
+      headers: { cookie: alice.cookie },
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Array<{ name: string }>;
+    expect(body).toHaveLength(1);
+    expect(body[0]?.name).toBe("Alice's Bot");
+  });
 });
 
 describe("GET /bots/:id", () => {
-  it("returns 400 invalid_request when :id is not a UUID", async () => {
+  it("returns 401 when no session cookie is sent", async () => {
     const { app } = await makeApp();
 
-    const res = await app.request("/bots/not-a-uuid");
+    const res = await app.request("/bots/00000000-0000-4000-8000-000000000000");
+
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: "unauthorized" });
+  });
+
+  it("returns 400 invalid_request when :id is not a UUID", async () => {
+    const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
+
+    const res = await app.request("/bots/not-a-uuid", { headers: { cookie } });
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "invalid_request" });
@@ -171,8 +241,12 @@ describe("GET /bots/:id", () => {
 
   it("returns 404 not_found when no bot has the given id", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
 
-    const res = await app.request("/bots/00000000-0000-4000-8000-000000000000");
+    const res = await app.request(
+      "/bots/00000000-0000-4000-8000-000000000000",
+      { headers: { cookie } },
+    );
 
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "not_found" });
@@ -180,14 +254,17 @@ describe("GET /bots/:id", () => {
 
   it("returns 200 with the full bot including config and updatedAt", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
     const created = await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "Welcome Bot" }),
     });
     const createdBody = (await created.json()) as { id: string };
 
-    const res = await app.request(`/bots/${createdBody.id}`);
+    const res = await app.request(`/bots/${createdBody.id}`, {
+      headers: { cookie },
+    });
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
@@ -201,6 +278,29 @@ describe("GET /bots/:id", () => {
     expect(body.config).toEqual({ triggers: [] });
     expect(typeof body.updatedAt).toBe("string");
   });
+
+  it("returns 404 when the bot exists but belongs to a different user", async () => {
+    const { app } = await makeApp();
+    const alice = await registerUser(app);
+    const bob = await registerUser(app, {
+      email: "bob@example.com",
+      username: "bob",
+      password: "supersecret",
+    });
+    const created = await app.request("/bots", {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: alice.cookie },
+      body: JSON.stringify({ name: "Alice's Bot" }),
+    });
+    const createdBody = (await created.json()) as { id: string };
+
+    const res = await app.request(`/bots/${createdBody.id}`, {
+      headers: { cookie: bob.cookie },
+    });
+
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: "not_found" });
+  });
 });
 
 describe("PUT /bots/:id/config", () => {
@@ -213,41 +313,7 @@ describe("PUT /bots/:id/config", () => {
     ],
   };
 
-  it("returns 400 invalid_request when :id is not a UUID", async () => {
-    const { app } = await makeApp();
-
-    const res = await app.request("/bots/not-a-uuid/config", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(validConfig),
-    });
-
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "invalid_request" });
-  });
-
-  it("returns 400 invalid_request when the body fails BotConfig validation", async () => {
-    const { app } = await makeApp();
-    const created = await app.request("/bots", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: "Welcome Bot" }),
-    });
-    const createdBody = (await created.json()) as { id: string };
-
-    const res = await app.request(`/bots/${createdBody.id}/config`, {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        triggers: [{ event: "unknown_event", actions: [] }],
-      }),
-    });
-
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "invalid_request" });
-  });
-
-  it("returns 404 not_found when the body is valid but no bot exists with that id", async () => {
+  it("returns 401 when no session cookie is sent", async () => {
     const { app } = await makeApp();
 
     const res = await app.request(
@@ -259,15 +325,94 @@ describe("PUT /bots/:id/config", () => {
       },
     );
 
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: "unauthorized" });
+  });
+
+  it("returns 400 invalid_request when :id is not a UUID", async () => {
+    const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
+
+    const res = await app.request("/bots/not-a-uuid/config", {
+      method: "PUT",
+      headers: { "content-type": "application/json", cookie },
+      body: JSON.stringify(validConfig),
+    });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid_request" });
+  });
+
+  it("returns 400 invalid_request when the body fails BotConfig validation", async () => {
+    const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
+    const created = await app.request("/bots", {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie },
+      body: JSON.stringify({ name: "Welcome Bot" }),
+    });
+    const createdBody = (await created.json()) as { id: string };
+
+    const res = await app.request(`/bots/${createdBody.id}/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", cookie },
+      body: JSON.stringify({
+        triggers: [{ event: "unknown_event", actions: [] }],
+      }),
+    });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "invalid_request" });
+  });
+
+  it("returns 404 not_found when the body is valid but no bot exists with that id", async () => {
+    const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
+
+    const res = await app.request(
+      "/bots/00000000-0000-4000-8000-000000000000/config",
+      {
+        method: "PUT",
+        headers: { "content-type": "application/json", cookie },
+        body: JSON.stringify(validConfig),
+      },
+    );
+
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: "not_found" });
+  });
+
+  it("returns 404 when the bot exists but belongs to a different user", async () => {
+    const { app } = await makeApp();
+    const alice = await registerUser(app);
+    const bob = await registerUser(app, {
+      email: "bob@example.com",
+      username: "bob",
+      password: "supersecret",
+    });
+    const created = await app.request("/bots", {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: alice.cookie },
+      body: JSON.stringify({ name: "Alice's Bot" }),
+    });
+    const createdBody = (await created.json()) as { id: string };
+
+    const res = await app.request(`/bots/${createdBody.id}/config`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", cookie: bob.cookie },
+      body: JSON.stringify(validConfig),
+    });
+
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "not_found" });
   });
 
   it("replaces the config, bumps updated_at, and returns the updated bot", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
     const created = await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "Welcome Bot" }),
     });
     const createdBody = (await created.json()) as {
@@ -278,7 +423,7 @@ describe("PUT /bots/:id/config", () => {
     await new Promise((r) => setTimeout(r, 10));
     const res = await app.request(`/bots/${createdBody.id}/config`, {
       method: "PUT",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify(validConfig),
     });
 
@@ -294,7 +439,9 @@ describe("PUT /bots/:id/config", () => {
       new Date(createdBody.updatedAt).getTime(),
     );
 
-    const fetched = await app.request(`/bots/${createdBody.id}`);
+    const fetched = await app.request(`/bots/${createdBody.id}`, {
+      headers: { cookie },
+    });
     const fetchedBody = (await fetched.json()) as { config: unknown };
     expect(fetchedBody.config).toEqual(validConfig);
   });
@@ -303,13 +450,14 @@ describe("PUT /bots/:id/config", () => {
 describe("GET /bots â€” extras", () => {
   it("omits config from each item in the summary response", async () => {
     const { app } = await makeApp();
+    const { cookie } = await registerUser(app);
     await app.request("/bots", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       body: JSON.stringify({ name: "Alpha" }),
     });
 
-    const res = await app.request("/bots");
+    const res = await app.request("/bots", { headers: { cookie } });
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as Array<Record<string, unknown>>;

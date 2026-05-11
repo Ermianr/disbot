@@ -40,3 +40,21 @@ export function extractSessionCookieValue(res: Response): string {
   if (!match?.[1]) throw new Error("expected disbot_session cookie");
   return `disbot_session=${match[1]}`;
 }
+
+export async function registerUser(
+  app: AppHarness["app"],
+  body: { email: string; username: string; password: string } = {
+    email: "alice@example.com",
+    username: "alice",
+    password: "supersecret",
+  },
+): Promise<{ cookie: string; userId: string }> {
+  const res = await app.request("/auth/register", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const cookie = extractSessionCookieValue(res);
+  const json = (await res.json()) as { user: { id: string } };
+  return { cookie, userId: json.user.id };
+}

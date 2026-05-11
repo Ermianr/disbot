@@ -3,32 +3,39 @@ import {
   type BotSummary,
   createBot,
   type Database,
-  getBotById,
+  getBotByIdAndOwner,
   listBots,
   updateBotConfig,
 } from "@disbot/database";
 import type { BotConfig } from "@disbot/shared/dsl";
 
 export type Bots = {
-  create(input: { name: string; config?: BotConfig }): Promise<Bot>;
-  list(): Promise<BotSummary[]>;
-  get(id: string): Promise<Bot | null>;
-  updateConfig(id: string, config: BotConfig): Promise<Bot | null>;
+  create(
+    userId: string,
+    input: { name: string; config?: BotConfig },
+  ): Promise<Bot>;
+  list(userId: string): Promise<BotSummary[]>;
+  get(userId: string, id: string): Promise<Bot | null>;
+  updateConfig(
+    userId: string,
+    id: string,
+    config: BotConfig,
+  ): Promise<Bot | null>;
 };
 
 export function createBots({ db }: { db: Database }): Bots {
   return {
-    async create(input) {
-      return createBot(db, { name: input.name, config: input.config });
+    async create(userId, input) {
+      return createBot(db, userId, { name: input.name, config: input.config });
     },
-    async list() {
-      return listBots(db);
+    async list(userId) {
+      return listBots(db, userId);
     },
-    async get(id) {
-      return getBotById(db, id);
+    async get(userId, id) {
+      return getBotByIdAndOwner(db, id, userId);
     },
-    async updateConfig(id, config) {
-      return updateBotConfig(db, id, config);
+    async updateConfig(userId, id, config) {
+      return updateBotConfig(db, userId, id, config);
     },
   };
 }
