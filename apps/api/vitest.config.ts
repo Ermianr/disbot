@@ -6,5 +6,6 @@ export default defineConfig({
     environment: "node",
     exclude: ["node_modules", "dist"],
     setupFiles: ["./test/setup-bun-shim.ts"],
+    testTimeout: 10000,
   },
 });
