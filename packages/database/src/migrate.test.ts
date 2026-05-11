@@ -29,6 +29,8 @@ describe("bots migration", () => {
       "created_at",
       "config",
       "updated_at",
+      "status",
+      "discord_token",
     ]);
   });
 });

@@ -29,6 +29,13 @@
       "when": 1778463600000,
       "tag": "0003_destructive_bots_user_id",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778519424288,
+      "tag": "0004_add_bot_status_and_token",
+      "breakpoints": true
     }
   ]
 }
