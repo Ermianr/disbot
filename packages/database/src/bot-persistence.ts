@@ -49,6 +49,34 @@ export async function updateBotConfig(
   return row ?? null;
 }
 
+export async function updateBotToken(
+  db: Database,
+  userId: string,
+  id: string,
+  discordToken: string,
+): Promise<Bot | null> {
+  const [row] = await db
+    .update(bots)
+    .set({ discordToken, updatedAt: sql`now()` })
+    .where(and(eq(bots.id, id), eq(bots.userId, userId)))
+    .returning();
+  return row ?? null;
+}
+
+export async function updateBotStatus(
+  db: Database,
+  userId: string,
+  id: string,
+  status: Bot["status"],
+): Promise<Bot | null> {
+  const [row] = await db
+    .update(bots)
+    .set({ status, updatedAt: sql`now()` })
+    .where(and(eq(bots.id, id), eq(bots.userId, userId)))
+    .returning();
+  return row ?? null;
+}
+
 export async function listBots(
   db: Database,
   userId: string,
@@ -57,6 +85,8 @@ export async function listBots(
     .select({
       id: bots.id,
       name: bots.name,
+      status: bots.status,
+      hasToken: sql<boolean>`${bots.discordToken} IS NOT NULL`,
       createdAt: bots.createdAt,
       updatedAt: bots.updatedAt,
     })

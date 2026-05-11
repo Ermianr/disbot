@@ -17,6 +17,7 @@ export type AppHarness = {
 export async function makeApp(overrides?: {
   cookieOptions?: CookieOptions;
   corsOrigin?: string;
+  tokenMasterKey?: Buffer;
 }): Promise<AppHarness> {
   const db = await freshDb();
   const sessions = createInMemorySessionStore({ ttlMs: SESSION_TTL_MS });
@@ -29,6 +30,7 @@ export async function makeApp(overrides?: {
       secure: false,
     },
     corsOrigin: overrides?.corsOrigin ?? "http://localhost:3001",
+    tokenMasterKey: overrides?.tokenMasterKey ?? Buffer.from("a".repeat(32)),
   });
   return { app, db, sessions };
 }

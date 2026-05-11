@@ -7,3 +7,7 @@ export function invalidRequest(c: Context): Response {
 export function notFound(c: Context): Response {
   return c.json({ error: "not_found" }, 404);
 }
+
+export function conflict(c: Context, reason: string): Response {
+  return c.json({ error: "conflict", reason }, 409);
+}

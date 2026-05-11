@@ -20,6 +20,13 @@ if (!corsOrigin) {
   throw new Error("WEB_ORIGIN is required");
 }
 
+const tokenMasterKey = process.env.TOKEN_MASTER_KEY
+  ? Buffer.from(process.env.TOKEN_MASTER_KEY)
+  : null;
+if (!tokenMasterKey || tokenMasterKey.length !== 32) {
+  throw new Error("TOKEN_MASTER_KEY is required and must be 32 bytes");
+}
+
 const cookieOptions: CookieOptions = {
   sameSite: parseSameSite(process.env.COOKIE_SAMESITE),
   secure: parseSecure(process.env.COOKIE_SECURE),
@@ -37,6 +44,7 @@ const app = createApp({
   sessions: createRedisSessionStore(redis, SESSION_TTL_MS),
   cookieOptions,
   corsOrigin,
+  tokenMasterKey,
 });
 
 const port = Number(process.env.PORT) || 3000;

@@ -7,3 +7,29 @@ export const CreateBotRequest = z.object({
 });
 
 export type CreateBotRequest = z.infer<typeof CreateBotRequest>;
+
+export const SetBotTokenRequest = z.object({
+  discordToken: z.string().min(1),
+});
+
+export type SetBotTokenRequest = z.infer<typeof SetBotTokenRequest>;
+
+export const BotStatus = z.enum([
+  "draft",
+  "enabled",
+  "disabled",
+  "error",
+  "rate_limited",
+]);
+
+export const PublicBot = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  status: BotStatus,
+  hasToken: z.boolean(),
+  config: BotConfig.optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export type PublicBot = z.infer<typeof PublicBot>;
