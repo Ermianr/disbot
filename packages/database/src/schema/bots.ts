@@ -1,11 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { BOT_CONFIG_EMPTY, type BotConfig } from "@disbot/shared/dsl";
 import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { users } from "./users";
 
 export const bots = pgTable("bots", {
   id: uuid("id")
     .primaryKey()
     .$defaultFn(() => randomUUID()),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
