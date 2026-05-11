@@ -15,6 +15,13 @@
       "when": 1778440075321,
       "tag": "0001_perfect_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778455904260,
+      "tag": "0002_shocking_king_cobra",
+      "breakpoints": true
     }
   ]
 }

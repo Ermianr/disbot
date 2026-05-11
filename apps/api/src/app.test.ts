@@ -1,11 +1,9 @@
-import { freshDb } from "@disbot/database/testing";
-import { describe, expect, it } from "vitest";
-import { createApp } from "./app";
+﻿import { describe, expect, it } from "vitest";
+import { makeApp } from "../test/app-harness";
 
 describe("GET /health", () => {
   it("returns ok status", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/health");
 
@@ -17,8 +15,7 @@ describe("GET /health", () => {
 
 describe("POST /bots", () => {
   it("creates a bot and returns 201 with the persisted record", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots", {
       method: "POST",
@@ -40,8 +37,7 @@ describe("POST /bots", () => {
   });
 
   it("returns 400 when the body is missing name", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots", {
       method: "POST",
@@ -53,8 +49,7 @@ describe("POST /bots", () => {
   });
 
   it("returns 400 when name is an empty string", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots", {
       method: "POST",
@@ -66,8 +61,7 @@ describe("POST /bots", () => {
   });
 
   it("returns the canonical 400 shape when the body is not valid JSON", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots", {
       method: "POST",
@@ -80,8 +74,7 @@ describe("POST /bots", () => {
   });
 
   it("persists and returns the provided config when one is supplied", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
     const config = {
       triggers: [
         {
@@ -104,8 +97,7 @@ describe("POST /bots", () => {
   });
 
   it("defaults config to an empty BotConfig when omitted", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots", {
       method: "POST",
@@ -120,8 +112,7 @@ describe("POST /bots", () => {
   });
 
   it("returns 400 when config is structurally invalid", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots", {
       method: "POST",
@@ -139,8 +130,7 @@ describe("POST /bots", () => {
 
 describe("GET /bots", () => {
   it("returns an empty array when no bots exist", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots");
 
@@ -149,8 +139,7 @@ describe("GET /bots", () => {
   });
 
   it("returns previously created bots", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
     await app.request("/bots", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -172,8 +161,7 @@ describe("GET /bots", () => {
 
 describe("GET /bots/:id", () => {
   it("returns 400 invalid_request when :id is not a UUID", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots/not-a-uuid");
 
@@ -182,8 +170,7 @@ describe("GET /bots/:id", () => {
   });
 
   it("returns 404 not_found when no bot has the given id", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots/00000000-0000-4000-8000-000000000000");
 
@@ -192,8 +179,7 @@ describe("GET /bots/:id", () => {
   });
 
   it("returns 200 with the full bot including config and updatedAt", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
     const created = await app.request("/bots", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -228,8 +214,7 @@ describe("PUT /bots/:id/config", () => {
   };
 
   it("returns 400 invalid_request when :id is not a UUID", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request("/bots/not-a-uuid/config", {
       method: "PUT",
@@ -242,8 +227,7 @@ describe("PUT /bots/:id/config", () => {
   });
 
   it("returns 400 invalid_request when the body fails BotConfig validation", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
     const created = await app.request("/bots", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -264,8 +248,7 @@ describe("PUT /bots/:id/config", () => {
   });
 
   it("returns 404 not_found when the body is valid but no bot exists with that id", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
 
     const res = await app.request(
       "/bots/00000000-0000-4000-8000-000000000000/config",
@@ -281,8 +264,7 @@ describe("PUT /bots/:id/config", () => {
   });
 
   it("replaces the config, bumps updated_at, and returns the updated bot", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
     const created = await app.request("/bots", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -318,10 +300,9 @@ describe("PUT /bots/:id/config", () => {
   });
 });
 
-describe("GET /bots — extras", () => {
+describe("GET /bots â€” extras", () => {
   it("omits config from each item in the summary response", async () => {
-    const db = await freshDb();
-    const app = createApp({ db });
+    const { app } = await makeApp();
     await app.request("/bots", {
       method: "POST",
       headers: { "content-type": "application/json" },

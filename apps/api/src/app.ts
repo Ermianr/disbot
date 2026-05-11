@@ -4,6 +4,10 @@ import { BotConfig } from "@disbot/shared/dsl";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
+import type { CookieOptions } from "./auth/cookies";
+import type { Passwords } from "./auth/passwords";
+import { createAuthRouter } from "./auth/router";
+import type { SessionStore } from "./auth/session-store";
 import { createBots } from "./bot";
 import { invalidRequest, notFound } from "./errors";
 import { validateJson } from "./validate";
@@ -12,17 +16,28 @@ const UuidParam = z.uuid();
 
 export type AppDeps = {
   db: Database;
+  passwords: Passwords;
+  sessions: SessionStore;
+  cookieOptions: CookieOptions;
+  corsOrigin: string;
 };
 
-export function createApp({ db }: AppDeps) {
+export function createApp(deps: AppDeps) {
   const app = new Hono();
-  const bots = createBots({ db });
+  const bots = createBots({ db: deps.db });
 
-  app.use(cors());
+  app.use(
+    cors({
+      origin: deps.corsOrigin,
+      credentials: true,
+    }),
+  );
 
   app.get("/health", (c) => {
     return c.json({ status: "ok" });
   });
+
+  app.route("/auth", createAuthRouter(deps));
 
   app.post("/bots", async (c) => {
     const result = await validateJson(c, CreateBotRequest);
