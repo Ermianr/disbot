@@ -99,11 +99,6 @@ pub mod error {
 pub struct BotConfig {
     pub triggers: ::std::vec::Vec<MessageCreateTrigger>,
 }
-impl ::std::convert::From<&BotConfig> for BotConfig {
-    fn from(value: &BotConfig) -> Self {
-        value.clone()
-    }
-}
 ///`MessageCreateTrigger`
 ///
 /// <details><summary>JSON schema</summary>
@@ -162,11 +157,6 @@ pub struct MessageCreateTrigger {
     pub actions: ::std::vec::Vec<SendMessageAction>,
     pub event: MessageCreateTriggerEvent,
 }
-impl ::std::convert::From<&MessageCreateTrigger> for MessageCreateTrigger {
-    fn from(value: &MessageCreateTrigger) -> Self {
-        value.clone()
-    }
-}
 ///`MessageCreateTriggerEvent`
 ///
 /// <details><summary>JSON schema</summary>
@@ -195,11 +185,6 @@ impl ::std::convert::From<&MessageCreateTrigger> for MessageCreateTrigger {
 pub enum MessageCreateTriggerEvent {
     #[serde(rename = "message_create")]
     MessageCreate,
-}
-impl ::std::convert::From<&Self> for MessageCreateTriggerEvent {
-    fn from(value: &MessageCreateTriggerEvent) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for MessageCreateTriggerEvent {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -281,11 +266,6 @@ pub struct SendMessageAction {
     #[serde(rename = "type")]
     pub type_: SendMessageActionType,
 }
-impl ::std::convert::From<&SendMessageAction> for SendMessageAction {
-    fn from(value: &SendMessageAction) -> Self {
-        value.clone()
-    }
-}
 ///`SendMessageActionOnError`
 ///
 /// <details><summary>JSON schema</summary>
@@ -318,11 +298,6 @@ pub enum SendMessageActionOnError {
     Stop,
     #[serde(rename = "continue")]
     Continue,
-}
-impl ::std::convert::From<&Self> for SendMessageActionOnError {
-    fn from(value: &SendMessageActionOnError) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for SendMessageActionOnError {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -397,11 +372,6 @@ impl ::std::default::Default for SendMessageActionOnError {
 pub enum SendMessageActionType {
     #[serde(rename = "send_message")]
     SendMessage,
-}
-impl ::std::convert::From<&Self> for SendMessageActionType {
-    fn from(value: &SendMessageActionType) -> Self {
-        value.clone()
-    }
 }
 impl ::std::fmt::Display for SendMessageActionType {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
