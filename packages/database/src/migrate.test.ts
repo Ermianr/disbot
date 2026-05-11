@@ -31,3 +31,53 @@ describe("bots migration", () => {
     ]);
   });
 });
+
+describe("users migration", () => {
+  it("creates a users table with id, email, username, password_hash, created_at, updated_at", async () => {
+    const client = new PGlite();
+    const db = drizzle(client);
+
+    await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
+
+    const result = await client.query<{ column_name: string }>(
+      `SELECT column_name FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'users'
+       ORDER BY ordinal_position`,
+    );
+    const columnNames = result.rows.map((r) => r.column_name);
+
+    expect(columnNames).toEqual([
+      "id",
+      "email",
+      "username",
+      "password_hash",
+      "created_at",
+      "updated_at",
+    ]);
+  });
+
+  it("enforces unique email and unique username", async () => {
+    const client = new PGlite();
+    const db = drizzle(client);
+    await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
+
+    await client.query(
+      `INSERT INTO users (id, email, username, password_hash)
+       VALUES ('11111111-1111-4111-8111-111111111111', 'a@example.com', 'alice', 'x')`,
+    );
+
+    await expect(
+      client.query(
+        `INSERT INTO users (id, email, username, password_hash)
+         VALUES ('22222222-2222-4222-8222-222222222222', 'a@example.com', 'bob', 'x')`,
+      ),
+    ).rejects.toThrow();
+
+    await expect(
+      client.query(
+        `INSERT INTO users (id, email, username, password_hash)
+         VALUES ('33333333-3333-4333-8333-333333333333', 'b@example.com', 'alice', 'x')`,
+      ),
+    ).rejects.toThrow();
+  });
+});
