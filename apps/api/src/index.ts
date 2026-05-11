@@ -65,9 +65,7 @@ function parseSecure(value: string | undefined): boolean {
   const normalized = value?.trim().toLowerCase();
   if (normalized === "true" || normalized === "1") return true;
   if (normalized) {
-    console.warn(
-      `Invalid COOKIE_SECURE value "${value}", defaulting to false`,
-    );
+    console.warn(`Invalid COOKIE_SECURE value "${value}", defaulting to false`);
   }
   return false;
 }

@@ -39,7 +39,10 @@ function RegisterComponent() {
           <input
             type="email"
             value={email}
-            onChange={(e) => { clearError(); setEmail(e.target.value); }}
+            onChange={(e) => {
+              clearError();
+              setEmail(e.target.value);
+            }}
             required
             autoComplete="email"
           />
@@ -48,7 +51,10 @@ function RegisterComponent() {
           Username
           <input
             value={username}
-            onChange={(e) => { clearError(); setUsername(e.target.value); }}
+            onChange={(e) => {
+              clearError();
+              setUsername(e.target.value);
+            }}
             required
             minLength={3}
             maxLength={32}
@@ -61,7 +67,10 @@ function RegisterComponent() {
           <input
             type="password"
             value={password}
-            onChange={(e) => { clearError(); setPassword(e.target.value); }}
+            onChange={(e) => {
+              clearError();
+              setPassword(e.target.value);
+            }}
             required
             minLength={8}
             maxLength={128}

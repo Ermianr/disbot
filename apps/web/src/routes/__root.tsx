@@ -23,6 +23,7 @@ function Header() {
     setLoading(false);
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: location is intentionally included to re-fetch user on navigation
   useEffect(() => {
     refresh();
   }, [refresh, location]);

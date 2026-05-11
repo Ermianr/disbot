@@ -24,6 +24,7 @@ describe("bots migration", () => {
 
     expect(columnNames).toEqual([
       "id",
+      "user_id",
       "name",
       "created_at",
       "config",
