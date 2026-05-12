@@ -10,7 +10,7 @@ import { type AuthVariables, requireAuth } from "./auth/require-auth";
 import { createAuthRouter } from "./auth/router";
 import type { SessionStore } from "./auth/session-store";
 import { createBots } from "./bot";
-import { conflict, invalidRequest, notFound } from "./errors";
+import { conflict, dbError, invalidRequest, notFound } from "./errors";
 import { validateJson } from "./validate";
 
 const UuidParam = z.uuid();
@@ -60,26 +60,29 @@ export function createApp(deps: AppDeps) {
     const result = await validateJson(c, CreateBotRequest);
     if (!result.ok) return result.response;
     const userId = c.get("userId");
-    const bot = await bots.create(userId, {
+    const botResult = await bots.create(userId, {
       name: result.data.name,
       config: result.data.config,
     });
-    return c.json(toPublicBot(bot), 201);
+    if (!botResult.ok) return dbError(c, botResult.error);
+    return c.json(toPublicBot(botResult.value), 201);
   });
 
   app.get("/bots", async (c) => {
     const userId = c.get("userId");
-    const all = await bots.list(userId);
-    return c.json(all.map(toPublicBot));
+    const allResult = await bots.list(userId);
+    if (!allResult.ok) return dbError(c, allResult.error);
+    return c.json(allResult.value.map(toPublicBot));
   });
 
   app.get("/bots/:id", async (c) => {
     const parsedId = UuidParam.safeParse(c.req.param("id"));
     if (!parsedId.success) return invalidRequest(c);
     const userId = c.get("userId");
-    const bot = await bots.get(userId, parsedId.data);
-    if (!bot) return notFound(c);
-    return c.json(toPublicBot(bot));
+    const botResult = await bots.get(userId, parsedId.data);
+    if (!botResult.ok) return dbError(c, botResult.error);
+    if (!botResult.value) return notFound(c);
+    return c.json(toPublicBot(botResult.value));
   });
 
   app.put("/bots/:id/config", async (c) => {
@@ -88,9 +91,10 @@ export function createApp(deps: AppDeps) {
     const body = await validateJson(c, BotConfig);
     if (!body.ok) return body.response;
     const userId = c.get("userId");
-    const bot = await bots.updateConfig(userId, parsedId.data, body.data);
-    if (!bot) return notFound(c);
-    return c.json(toPublicBot(bot));
+    const botResult = await bots.updateConfig(userId, parsedId.data, body.data);
+    if (!botResult.ok) return dbError(c, botResult.error);
+    if (!botResult.value) return notFound(c);
+    return c.json(toPublicBot(botResult.value));
   });
 
   app.put("/bots/:id/token", async (c) => {
@@ -99,13 +103,14 @@ export function createApp(deps: AppDeps) {
     const body = await validateJson(c, SetBotTokenRequest);
     if (!body.ok) return body.response;
     const userId = c.get("userId");
-    const bot = await bots.setToken(
+    const botResult = await bots.setToken(
       userId,
       parsedId.data,
       body.data.discordToken,
     );
-    if (!bot) return notFound(c);
-    return c.json(toPublicBot(bot));
+    if (!botResult.ok) return dbError(c, botResult.error);
+    if (!botResult.value) return notFound(c);
+    return c.json(toPublicBot(botResult.value));
   });
 
   app.post("/bots/:id/enable", async (c) => {
@@ -113,9 +118,11 @@ export function createApp(deps: AppDeps) {
     if (!parsedId.success) return invalidRequest(c);
     const userId = c.get("userId");
     const result = await bots.enable(userId, parsedId.data);
-    if (result.kind === "not_found") return notFound(c);
-    if (result.kind === "conflict") return conflict(c, result.reason);
-    return c.json(toPublicBot(result.bot));
+    if (!result.ok) return dbError(c, result.error);
+    if (result.value.kind === "not_found") return notFound(c);
+    if (result.value.kind === "conflict")
+      return conflict(c, result.value.reason);
+    return c.json(toPublicBot(result.value.bot));
   });
 
   app.post("/bots/:id/disable", async (c) => {
@@ -123,9 +130,11 @@ export function createApp(deps: AppDeps) {
     if (!parsedId.success) return invalidRequest(c);
     const userId = c.get("userId");
     const result = await bots.disable(userId, parsedId.data);
-    if (result.kind === "not_found") return notFound(c);
-    if (result.kind === "conflict") return conflict(c, result.reason);
-    return c.json(toPublicBot(result.bot));
+    if (!result.ok) return dbError(c, result.error);
+    if (result.value.kind === "not_found") return notFound(c);
+    if (result.value.kind === "conflict")
+      return conflict(c, result.value.reason);
+    return c.json(toPublicBot(result.value.bot));
   });
 
   return app;

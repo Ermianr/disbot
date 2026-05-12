@@ -1,9 +1,9 @@
 import {
   createUser,
   type Database,
+  type DbError,
   findUserByEmail,
   findUserById,
-  UserConflictError,
 } from "@disbot/database";
 import { LoginRequest, RegisterRequest } from "@disbot/shared/api";
 import type { Context } from "hono";
@@ -35,20 +35,20 @@ export function createAuthRouter(deps: AuthDeps): Hono {
     if (!parsed.ok) return parsed.response;
 
     const passwordHash = await passwords.hash(parsed.data.password);
-    let user: Awaited<ReturnType<typeof createUser>>;
-    try {
-      user = await createUser(db, {
-        email: parsed.data.email,
-        username: parsed.data.username,
-        passwordHash,
-      });
-    } catch (err) {
-      if (err instanceof UserConflictError) {
-        return c.json({ error: "conflict", field: err.field }, 409);
+    const result = await createUser(db, {
+      email: parsed.data.email,
+      username: parsed.data.username,
+      passwordHash,
+    });
+
+    if (!result.ok) {
+      if (result.error.kind === "conflict") {
+        return c.json({ error: "conflict", field: result.error.field }, 409);
       }
-      throw err;
+      return dbErrorResponse(c, result.error);
     }
 
+    const user = result.value;
     const { token } = await sessions.create(user.id);
     c.header("set-cookie", buildSetSessionCookie(token, cookieOptions));
     return c.json({ user: toPublicUser(user) }, 201);
@@ -58,7 +58,10 @@ export function createAuthRouter(deps: AuthDeps): Hono {
     const parsed = await validateJson(c, LoginRequest);
     if (!parsed.ok) return parsed.response;
 
-    const user = await findUserByEmail(db, parsed.data.email);
+    const result = await findUserByEmail(db, parsed.data.email);
+    if (!result.ok) return dbErrorResponse(c, result.error);
+
+    const user = result.value;
     if (!user) return invalidCredentials(c);
 
     const ok = await passwords.verify(parsed.data.password, user.passwordHash);
@@ -98,7 +101,10 @@ export function createAuthRouter(deps: AuthDeps): Hono {
       return unauthorized(c);
     }
 
-    const user = await findUserById(db, session.userId);
+    const result = await findUserById(db, session.userId);
+    if (!result.ok) return dbErrorResponse(c, result.error);
+
+    const user = result.value;
     if (!user) {
       await sessions.delete(token);
       c.header("set-cookie", buildClearSessionCookie(cookieOptions));
@@ -111,6 +117,19 @@ export function createAuthRouter(deps: AuthDeps): Hono {
   });
 
   return router;
+}
+
+function dbErrorResponse(c: Context, error: DbError) {
+  switch (error.kind) {
+    case "conflict":
+      return c.json({ error: "conflict", field: error.field }, 409);
+    case "constraintFailed":
+      return c.json({ error: "constraint_failed" }, 422);
+    case "connectionFailed":
+      return c.json({ error: "service_unavailable" }, 503);
+    case "unexpected":
+      return c.json({ error: "internal_server_error" }, 500);
+  }
 }
 
 function unauthorized(c: Context) {

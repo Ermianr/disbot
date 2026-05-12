@@ -1,19 +1,24 @@
 import { describe, expect, it } from "vitest";
 import {
   createBot,
+  disableBot,
+  enableBot,
   getBotByIdAndOwner,
   listBots,
   updateBotConfig,
+  updateBotToken,
 } from "./bot-persistence";
-import { freshDb } from "./test-utils/fresh-db";
+import { freshDb, unwrap } from "./test-utils";
 import { createUser } from "./user-persistence";
 
 async function createTestUser(db: Awaited<ReturnType<typeof freshDb>>) {
-  return createUser(db, {
-    email: "alice@example.com",
-    username: "alice",
-    passwordHash: "hash",
-  });
+  return unwrap(
+    await createUser(db, {
+      email: "alice@example.com",
+      username: "alice",
+      passwordHash: "hash",
+    }),
+  );
 }
 
 describe("createBot", () => {
@@ -21,7 +26,7 @@ describe("createBot", () => {
     const db = await freshDb();
     const user = await createTestUser(db);
 
-    const bot = await createBot(db, user.id, { name: "Welcome Bot" });
+    const bot = unwrap(await createBot(db, user.id, { name: "Welcome Bot" }));
 
     expect(bot.name).toBe("Welcome Bot");
     expect(bot.id).toMatch(
@@ -34,7 +39,7 @@ describe("createBot", () => {
     const db = await freshDb();
     const user = await createTestUser(db);
 
-    const bot = await createBot(db, user.id, { name: "Welcome Bot" });
+    const bot = unwrap(await createBot(db, user.id, { name: "Welcome Bot" }));
 
     expect(bot.config).toEqual({ triggers: [] });
     expect(bot.updatedAt).toBeInstanceOf(Date);
@@ -58,7 +63,9 @@ describe("createBot", () => {
       ],
     };
 
-    const bot = await createBot(db, user.id, { name: "Welcome Bot", config });
+    const bot = unwrap(
+      await createBot(db, user.id, { name: "Welcome Bot", config }),
+    );
 
     expect(bot.config).toEqual(config);
   });
@@ -69,10 +76,12 @@ describe("getBotByIdAndOwner", () => {
     const db = await freshDb();
     const user = await createTestUser(db);
 
-    const result = await getBotByIdAndOwner(
-      db,
-      "11111111-1111-1111-1111-111111111111",
-      user.id,
+    const result = unwrap(
+      await getBotByIdAndOwner(
+        db,
+        "11111111-1111-1111-1111-111111111111",
+        user.id,
+      ),
     );
 
     expect(result).toBeNull();
@@ -81,9 +90,11 @@ describe("getBotByIdAndOwner", () => {
   it("returns the full bot including config when one exists and belongs to the user", async () => {
     const db = await freshDb();
     const user = await createTestUser(db);
-    const created = await createBot(db, user.id, { name: "Welcome Bot" });
+    const created = unwrap(
+      await createBot(db, user.id, { name: "Welcome Bot" }),
+    );
 
-    const result = await getBotByIdAndOwner(db, created.id, user.id);
+    const result = unwrap(await getBotByIdAndOwner(db, created.id, user.id));
 
     expect(result).not.toBeNull();
     expect(result?.id).toBe(created.id);
@@ -95,14 +106,18 @@ describe("getBotByIdAndOwner", () => {
   it("returns null when the bot exists but belongs to a different user", async () => {
     const db = await freshDb();
     const alice = await createTestUser(db);
-    const bob = await createUser(db, {
-      email: "bob@example.com",
-      username: "bob",
-      passwordHash: "hash",
-    });
-    const created = await createBot(db, alice.id, { name: "Alice's Bot" });
+    const bob = unwrap(
+      await createUser(db, {
+        email: "bob@example.com",
+        username: "bob",
+        passwordHash: "hash",
+      }),
+    );
+    const created = unwrap(
+      await createBot(db, alice.id, { name: "Alice's Bot" }),
+    );
 
-    const result = await getBotByIdAndOwner(db, created.id, bob.id);
+    const result = unwrap(await getBotByIdAndOwner(db, created.id, bob.id));
 
     expect(result).toBeNull();
   });
@@ -113,11 +128,13 @@ describe("updateBotConfig", () => {
     const db = await freshDb();
     const user = await createTestUser(db);
 
-    const result = await updateBotConfig(
-      db,
-      user.id,
-      "11111111-1111-1111-1111-111111111111",
-      { triggers: [] },
+    const result = unwrap(
+      await updateBotConfig(
+        db,
+        user.id,
+        "11111111-1111-1111-1111-111111111111",
+        { triggers: [] },
+      ),
     );
 
     expect(result).toBeNull();
@@ -126,16 +143,22 @@ describe("updateBotConfig", () => {
   it("returns null when the bot exists but belongs to a different user", async () => {
     const db = await freshDb();
     const alice = await createTestUser(db);
-    const bob = await createUser(db, {
-      email: "bob@example.com",
-      username: "bob",
-      passwordHash: "hash",
-    });
-    const created = await createBot(db, alice.id, { name: "Alice's Bot" });
+    const bob = unwrap(
+      await createUser(db, {
+        email: "bob@example.com",
+        username: "bob",
+        passwordHash: "hash",
+      }),
+    );
+    const created = unwrap(
+      await createBot(db, alice.id, { name: "Alice's Bot" }),
+    );
 
-    const result = await updateBotConfig(db, bob.id, created.id, {
-      triggers: [],
-    });
+    const result = unwrap(
+      await updateBotConfig(db, bob.id, created.id, {
+        triggers: [],
+      }),
+    );
 
     expect(result).toBeNull();
   });
@@ -143,7 +166,9 @@ describe("updateBotConfig", () => {
   it("replaces the config, bumps updated_at, and returns the updated bot", async () => {
     const db = await freshDb();
     const user = await createTestUser(db);
-    const created = await createBot(db, user.id, { name: "Welcome Bot" });
+    const created = unwrap(
+      await createBot(db, user.id, { name: "Welcome Bot" }),
+    );
     await new Promise((r) => setTimeout(r, 10));
     const newConfig = {
       triggers: [
@@ -160,7 +185,9 @@ describe("updateBotConfig", () => {
       ],
     };
 
-    const result = await updateBotConfig(db, user.id, created.id, newConfig);
+    const result = unwrap(
+      await updateBotConfig(db, user.id, created.id, newConfig),
+    );
 
     expect(result).not.toBeNull();
     expect(result?.id).toBe(created.id);
@@ -176,7 +203,7 @@ describe("listBots", () => {
     const db = await freshDb();
     const user = await createTestUser(db);
 
-    const result = await listBots(db, user.id);
+    const result = unwrap(await listBots(db, user.id));
 
     expect(result).toEqual([]);
   });
@@ -184,11 +211,11 @@ describe("listBots", () => {
   it("returns previously created bots, newest first", async () => {
     const db = await freshDb();
     const user = await createTestUser(db);
-    const first = await createBot(db, user.id, { name: "First" });
+    const first = unwrap(await createBot(db, user.id, { name: "First" }));
     await new Promise((r) => setTimeout(r, 5));
-    const second = await createBot(db, user.id, { name: "Second" });
+    const second = unwrap(await createBot(db, user.id, { name: "Second" }));
 
-    const result = await listBots(db, user.id);
+    const result = unwrap(await listBots(db, user.id));
 
     expect(result.map((b) => b.id)).toEqual([second.id, first.id]);
   });
@@ -196,9 +223,9 @@ describe("listBots", () => {
   it("omits the config column from each item", async () => {
     const db = await freshDb();
     const user = await createTestUser(db);
-    await createBot(db, user.id, { name: "Welcome Bot" });
+    unwrap(await createBot(db, user.id, { name: "Welcome Bot" }));
 
-    const result = await listBots(db, user.id);
+    const result = unwrap(await listBots(db, user.id));
 
     expect(result).toHaveLength(1);
     expect(result[0]).not.toHaveProperty("config");
@@ -211,17 +238,66 @@ describe("listBots", () => {
   it("returns only bots belonging to the given user", async () => {
     const db = await freshDb();
     const alice = await createTestUser(db);
-    const bob = await createUser(db, {
-      email: "bob@example.com",
-      username: "bob",
-      passwordHash: "hash",
-    });
-    await createBot(db, alice.id, { name: "Alice's Bot" });
-    await createBot(db, bob.id, { name: "Bob's Bot" });
+    const bob = unwrap(
+      await createUser(db, {
+        email: "bob@example.com",
+        username: "bob",
+        passwordHash: "hash",
+      }),
+    );
+    unwrap(await createBot(db, alice.id, { name: "Alice's Bot" }));
+    unwrap(await createBot(db, bob.id, { name: "Bob's Bot" }));
 
-    const result = await listBots(db, alice.id);
+    const result = unwrap(await listBots(db, alice.id));
 
     expect(result).toHaveLength(1);
     expect(result[0]?.name).toBe("Alice's Bot");
+  });
+});
+
+describe("enableBot", () => {
+  it("returns true when the bot is enabled", async () => {
+    const db = await freshDb();
+    const user = await createTestUser(db);
+    const bot = unwrap(await createBot(db, user.id, { name: "Welcome Bot" }));
+    unwrap(await updateBotToken(db, user.id, bot.id, "secret-token"));
+
+    const result = unwrap(await enableBot(db, user.id, bot.id));
+
+    expect(result).toBe(true);
+  });
+
+  it("returns false when the bot has no token", async () => {
+    const db = await freshDb();
+    const user = await createTestUser(db);
+    const bot = unwrap(await createBot(db, user.id, { name: "Welcome Bot" }));
+
+    const result = unwrap(await enableBot(db, user.id, bot.id));
+
+    expect(result).toBe(false);
+  });
+});
+
+describe("disableBot", () => {
+  it("returns true when the bot is disabled", async () => {
+    const db = await freshDb();
+    const user = await createTestUser(db);
+    const bot = unwrap(await createBot(db, user.id, { name: "Welcome Bot" }));
+    unwrap(await updateBotToken(db, user.id, bot.id, "secret-token"));
+    unwrap(await enableBot(db, user.id, bot.id));
+
+    const result = unwrap(await disableBot(db, user.id, bot.id));
+
+    expect(result).toBe(true);
+  });
+
+  it("returns false when the bot is draft", async () => {
+    const db = await freshDb();
+    const user = await createTestUser(db);
+    const bot = unwrap(await createBot(db, user.id, { name: "Welcome Bot" }));
+
+    const result = unwrap(await disableBot(db, user.id, bot.id));
+
+    expect(result).toBe(false);
   });
 });

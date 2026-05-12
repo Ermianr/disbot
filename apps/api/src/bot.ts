@@ -3,10 +3,12 @@ import {
   type BotSummary,
   createBot,
   type Database,
+  type DbError,
   disableBot,
   enableBot,
   getBotByIdAndOwner,
   listBots,
+  type Result,
   updateBotConfig,
   updateBotToken,
 } from "@disbot/database";
@@ -16,7 +18,10 @@ import { encrypt } from "./crypto/token-crypto";
 export type EnableResult =
   | { kind: "ok"; bot: Bot }
   | { kind: "not_found" }
-  | { kind: "conflict"; reason: string };
+  | {
+      kind: "conflict";
+      reason: "bot_has_no_token" | "invalid_status_transition";
+    };
 
 export type DisableResult = EnableResult;
 
@@ -24,21 +29,21 @@ export type Bots = {
   create(
     userId: string,
     input: { name: string; config?: BotConfig },
-  ): Promise<Bot>;
-  list(userId: string): Promise<BotSummary[]>;
-  get(userId: string, id: string): Promise<Bot | null>;
+  ): Promise<Result<Bot, DbError>>;
+  list(userId: string): Promise<Result<BotSummary[], DbError>>;
+  get(userId: string, id: string): Promise<Result<Bot | null, DbError>>;
   updateConfig(
     userId: string,
     id: string,
     config: BotConfig,
-  ): Promise<Bot | null>;
+  ): Promise<Result<Bot | null, DbError>>;
   setToken(
     userId: string,
     id: string,
     discordToken: string,
-  ): Promise<Bot | null>;
-  enable(userId: string, id: string): Promise<EnableResult>;
-  disable(userId: string, id: string): Promise<DisableResult>;
+  ): Promise<Result<Bot | null, DbError>>;
+  enable(userId: string, id: string): Promise<Result<EnableResult, DbError>>;
+  disable(userId: string, id: string): Promise<Result<DisableResult, DbError>>;
 };
 
 export function createBots({
@@ -50,7 +55,10 @@ export function createBots({
 }): Bots {
   return {
     async create(userId, input) {
-      return createBot(db, userId, { name: input.name, config: input.config });
+      return createBot(db, userId, {
+        name: input.name,
+        config: input.config,
+      });
     },
     async list(userId) {
       return listBots(db, userId);
@@ -66,25 +74,66 @@ export function createBots({
       return updateBotToken(db, userId, id, encrypted);
     },
     async enable(userId, id) {
-      const updated = await enableBot(db, userId, id);
-      if (!updated) {
-        const bot = await getBotByIdAndOwner(db, id, userId);
-        if (!bot) return { kind: "not_found" };
+      const enableResult = await enableBot(db, userId, id);
+      if (!enableResult.ok) return enableResult;
+
+      if (!enableResult.value) {
+        const botResult = await getBotByIdAndOwner(db, id, userId);
+        if (!botResult.ok) return botResult;
+        const bot = botResult.value;
+        if (!bot) return { ok: true, value: { kind: "not_found" as const } };
         if (!bot.discordToken) {
-          return { kind: "conflict", reason: "bot_has_no_token" };
+          return {
+            ok: true,
+            value: { kind: "conflict" as const, reason: "bot_has_no_token" },
+          };
         }
-        return { kind: "conflict", reason: "invalid_status_transition" };
+        return {
+          ok: true,
+          value: {
+            kind: "conflict" as const,
+            reason: "invalid_status_transition",
+          },
+        };
       }
-      return { kind: "ok", bot: updated };
+
+      const botResult = await getBotByIdAndOwner(db, id, userId);
+      if (!botResult.ok) return botResult;
+      if (!botResult.value) {
+        return { ok: true, value: { kind: "not_found" as const } };
+      }
+      return {
+        ok: true,
+        value: { kind: "ok" as const, bot: botResult.value },
+      };
     },
     async disable(userId, id) {
-      const updated = await disableBot(db, userId, id);
-      if (!updated) {
-        const bot = await getBotByIdAndOwner(db, id, userId);
-        if (!bot) return { kind: "not_found" };
-        return { kind: "conflict", reason: "invalid_status_transition" };
+      const disableResult = await disableBot(db, userId, id);
+      if (!disableResult.ok) return disableResult;
+
+      if (!disableResult.value) {
+        const botResult = await getBotByIdAndOwner(db, id, userId);
+        if (!botResult.ok) return botResult;
+        const bot = botResult.value;
+        if (!bot) return { ok: true, value: { kind: "not_found" as const } };
+        return {
+          ok: true,
+          value: {
+            kind: "conflict" as const,
+            reason: "invalid_status_transition",
+          },
+        };
       }
-      return { kind: "ok", bot: updated };
+
+      const botResult = await getBotByIdAndOwner(db, id, userId);
+      if (!botResult.ok) return botResult;
+      if (!botResult.value) {
+        return { ok: true, value: { kind: "not_found" as const } };
+      }
+      return {
+        ok: true,
+        value: { kind: "ok" as const, bot: botResult.value },
+      };
     },
   };
 }
