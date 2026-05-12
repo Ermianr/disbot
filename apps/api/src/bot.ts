@@ -18,7 +18,10 @@ import { encrypt } from "./crypto/token-crypto";
 export type EnableResult =
   | { kind: "ok"; bot: Bot }
   | { kind: "not_found" }
-  | { kind: "conflict"; reason: "bot_has_no_token" | "invalid_status_transition" };
+  | {
+      kind: "conflict";
+      reason: "bot_has_no_token" | "invalid_status_transition";
+    };
 
 export type DisableResult = EnableResult;
 
@@ -87,7 +90,10 @@ export function createBots({
         }
         return {
           ok: true,
-          value: { kind: "conflict" as const, reason: "invalid_status_transition" },
+          value: {
+            kind: "conflict" as const,
+            reason: "invalid_status_transition",
+          },
         };
       }
 
@@ -112,7 +118,10 @@ export function createBots({
         if (!bot) return { ok: true, value: { kind: "not_found" as const } };
         return {
           ok: true,
-          value: { kind: "conflict" as const, reason: "invalid_status_transition" },
+          value: {
+            kind: "conflict" as const,
+            reason: "invalid_status_transition",
+          },
         };
       }
 

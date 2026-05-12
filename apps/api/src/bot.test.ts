@@ -63,7 +63,9 @@ describe("Bots.setToken", () => {
     const user = await createTestUser(db);
     const bot = unwrap(await bots.create(user.id, { name: "Welcome Bot" }));
 
-    const updated = unwrap(await bots.setToken(user.id, bot.id, "secret-token"));
+    const updated = unwrap(
+      await bots.setToken(user.id, bot.id, "secret-token"),
+    );
 
     expect(updated).not.toBeNull();
     expect(updated?.discordToken).not.toBe("secret-token");

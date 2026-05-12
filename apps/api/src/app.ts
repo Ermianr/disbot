@@ -120,7 +120,8 @@ export function createApp(deps: AppDeps) {
     const result = await bots.enable(userId, parsedId.data);
     if (!result.ok) return dbError(c, result.error);
     if (result.value.kind === "not_found") return notFound(c);
-    if (result.value.kind === "conflict") return conflict(c, result.value.reason);
+    if (result.value.kind === "conflict")
+      return conflict(c, result.value.reason);
     return c.json(toPublicBot(result.value.bot));
   });
 
@@ -131,7 +132,8 @@ export function createApp(deps: AppDeps) {
     const result = await bots.disable(userId, parsedId.data);
     if (!result.ok) return dbError(c, result.error);
     if (result.value.kind === "not_found") return notFound(c);
-    if (result.value.kind === "conflict") return conflict(c, result.value.reason);
+    if (result.value.kind === "conflict")
+      return conflict(c, result.value.reason);
     return c.json(toPublicBot(result.value.bot));
   });
 
