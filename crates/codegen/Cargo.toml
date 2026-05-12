@@ -11,7 +11,7 @@ path = "src/main.rs"
 
 [dependencies]
 typify = "0.6"
-schemars = "0.8"
+schemars = "1.0"
 serde_json = { workspace = true }
 prettyplease = "0.2"
 syn = { version = "2", features = ["full"] }
