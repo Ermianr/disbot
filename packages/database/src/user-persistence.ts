@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import type { Database } from "./client";
+import type { DbError } from "./db-error";
 import { defaultAdapter } from "./error-adapter";
 import type { Result } from "./result";
-import type { DbError } from "./db-error";
 import { type UserRow, users } from "./schema/users";
 
 export type CreateUserInput = {

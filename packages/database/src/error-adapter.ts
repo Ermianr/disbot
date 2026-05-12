@@ -1,6 +1,6 @@
-import type { Result } from "./result";
-import { ok, err } from "./result";
 import type { DbError } from "./db-error";
+import type { Result } from "./result";
+import { err, ok } from "./result";
 
 export interface ErrorAdapter {
   adapt<T>(operation: () => Promise<T>): Promise<Result<T, DbError>>;

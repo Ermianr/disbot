@@ -1,9 +1,9 @@
 import type { BotConfig } from "@disbot/shared/dsl";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { Database } from "./client";
+import type { DbError } from "./db-error";
 import { defaultAdapter } from "./error-adapter";
 import type { Result } from "./result";
-import type { DbError } from "./db-error";
 import { type Bot, type BotSummary, bots } from "./schema/bots";
 
 export async function createBot(
