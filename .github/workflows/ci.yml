@@ -94,7 +94,21 @@ jobs:
       - name: Check for changes
         id: changes
         run: |
-          if git diff --quiet HEAD~1 -- apps/${{ matrix.app }}/; then
+          BASE="${{ github.event.before }}"
+          if [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            BASE="HEAD~1"
+          fi
+
+          case "${{ matrix.app }}" in
+            web|api)
+              PATHS="apps/${{ matrix.app }}/ packages/ package.json bun.lock turbo.json"
+              ;;
+            orchestrator|runtime)
+              PATHS="apps/${{ matrix.app }}/ crates/ Cargo.toml Cargo.lock"
+              ;;
+          esac
+
+          if git diff --quiet "$BASE" HEAD -- $PATHS; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
