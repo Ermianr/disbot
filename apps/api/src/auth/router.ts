@@ -121,8 +121,6 @@ export function createAuthRouter(deps: AuthDeps): Hono {
 
 function dbErrorResponse(c: Context, error: DbError) {
   switch (error.kind) {
-    case "notFound":
-      return c.json({ error: "not_found" }, 404);
     case "conflict":
       return c.json({ error: "conflict", field: error.field }, 409);
     case "constraintFailed":

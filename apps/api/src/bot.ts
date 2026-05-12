@@ -18,7 +18,7 @@ import { encrypt } from "./crypto/token-crypto";
 export type EnableResult =
   | { kind: "ok"; bot: Bot }
   | { kind: "not_found" }
-  | { kind: "conflict"; reason: string };
+  | { kind: "conflict"; reason: "bot_has_no_token" | "invalid_status_transition" };
 
 export type DisableResult = EnableResult;
 
@@ -93,9 +93,12 @@ export function createBots({
 
       const botResult = await getBotByIdAndOwner(db, id, userId);
       if (!botResult.ok) return botResult;
+      if (!botResult.value) {
+        return { ok: true, value: { kind: "not_found" as const } };
+      }
       return {
         ok: true,
-        value: { kind: "ok" as const, bot: botResult.value! },
+        value: { kind: "ok" as const, bot: botResult.value },
       };
     },
     async disable(userId, id) {
@@ -115,9 +118,12 @@ export function createBots({
 
       const botResult = await getBotByIdAndOwner(db, id, userId);
       if (!botResult.ok) return botResult;
+      if (!botResult.value) {
+        return { ok: true, value: { kind: "not_found" as const } };
+      }
       return {
         ok: true,
-        value: { kind: "ok" as const, bot: botResult.value! },
+        value: { kind: "ok" as const, bot: botResult.value },
       };
     },
   };

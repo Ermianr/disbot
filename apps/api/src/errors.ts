@@ -15,8 +15,6 @@ export function conflict(c: Context, reason: string): Response {
 
 export function dbError(c: Context, error: DbError): Response {
   switch (error.kind) {
-    case "notFound":
-      return c.json({ error: "not_found" }, 404);
     case "conflict":
       return c.json({ error: "conflict", field: error.field }, 409);
     case "constraintFailed":

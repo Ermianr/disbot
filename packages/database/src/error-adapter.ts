@@ -30,21 +30,28 @@ export function classify(raw: unknown): DbError {
     if (typeof obj.code === "string") {
       if (obj.code === "23505") {
         const field = constraintToField(obj.constraint);
-        const constraint = String(obj.constraint ?? "unknown");
+        const constraint =
+          typeof obj.constraint === "string" ? obj.constraint : "unknown";
         return { kind: "conflict", field, constraint };
       }
 
       if (obj.code === "23503") {
         return {
           kind: "constraintFailed",
-          message: String(obj.message ?? "Foreign key violation"),
+          message:
+            typeof obj.message === "string"
+              ? obj.message
+              : "Foreign key violation",
         };
       }
 
       if (obj.code.startsWith("08")) {
         return {
           kind: "connectionFailed",
-          message: String(obj.message ?? "Database connection failed"),
+          message:
+            typeof obj.message === "string"
+              ? obj.message
+              : "Database connection failed",
         };
       }
     }
