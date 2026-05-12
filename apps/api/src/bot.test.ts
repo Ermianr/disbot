@@ -1,16 +1,18 @@
 import { createUser } from "@disbot/database";
-import { freshDb } from "@disbot/database/testing";
+import { freshDb, unwrap } from "@disbot/database/testing";
 import { describe, expect, it } from "vitest";
 import { createBots } from "./bot";
 
 const TEST_KEY = Buffer.from("a".repeat(32));
 
 async function createTestUser(db: Awaited<ReturnType<typeof freshDb>>) {
-  return createUser(db, {
-    email: "alice@example.com",
-    username: "alice",
-    passwordHash: "hash",
-  });
+  return unwrap(
+    await createUser(db, {
+      email: "alice@example.com",
+      username: "alice",
+      passwordHash: "hash",
+    }),
+  );
 }
 
 describe("Bots.create", () => {
@@ -19,13 +21,13 @@ describe("Bots.create", () => {
     const bots = createBots({ db, tokenMasterKey: TEST_KEY });
     const user = await createTestUser(db);
 
-    const bot = await bots.create(user.id, { name: "Welcome Bot" });
+    const result = unwrap(await bots.create(user.id, { name: "Welcome Bot" }));
 
-    expect(bot.name).toBe("Welcome Bot");
-    expect(bot.id).toMatch(
+    expect(result.name).toBe("Welcome Bot");
+    expect(result.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
     );
-    expect(bot.createdAt).toBeInstanceOf(Date);
+    expect(result.createdAt).toBeInstanceOf(Date);
   });
 });
 
@@ -35,7 +37,7 @@ describe("Bots.list", () => {
     const bots = createBots({ db, tokenMasterKey: TEST_KEY });
     const user = await createTestUser(db);
 
-    const result = await bots.list(user.id);
+    const result = unwrap(await bots.list(user.id));
 
     expect(result).toEqual([]);
   });
@@ -44,11 +46,11 @@ describe("Bots.list", () => {
     const db = await freshDb();
     const bots = createBots({ db, tokenMasterKey: TEST_KEY });
     const user = await createTestUser(db);
-    const first = await bots.create(user.id, { name: "First" });
+    const first = unwrap(await bots.create(user.id, { name: "First" }));
     await new Promise((r) => setTimeout(r, 5));
-    const second = await bots.create(user.id, { name: "Second" });
+    const second = unwrap(await bots.create(user.id, { name: "Second" }));
 
-    const result = await bots.list(user.id);
+    const result = unwrap(await bots.list(user.id));
 
     expect(result.map((b) => b.id)).toEqual([second.id, first.id]);
   });
@@ -59,9 +61,9 @@ describe("Bots.setToken", () => {
     const db = await freshDb();
     const bots = createBots({ db, tokenMasterKey: TEST_KEY });
     const user = await createTestUser(db);
-    const bot = await bots.create(user.id, { name: "Welcome Bot" });
+    const bot = unwrap(await bots.create(user.id, { name: "Welcome Bot" }));
 
-    const updated = await bots.setToken(user.id, bot.id, "secret-token");
+    const updated = unwrap(await bots.setToken(user.id, bot.id, "secret-token"));
 
     expect(updated).not.toBeNull();
     expect(updated?.discordToken).not.toBe("secret-token");
@@ -74,9 +76,9 @@ describe("Bots.enable", () => {
     const db = await freshDb();
     const bots = createBots({ db, tokenMasterKey: TEST_KEY });
     const user = await createTestUser(db);
-    const bot = await bots.create(user.id, { name: "Welcome Bot" });
+    const bot = unwrap(await bots.create(user.id, { name: "Welcome Bot" }));
 
-    const result = await bots.enable(user.id, bot.id);
+    const result = unwrap(await bots.enable(user.id, bot.id));
 
     expect(result.kind).toBe("conflict");
     if (result.kind === "conflict") {
@@ -88,10 +90,10 @@ describe("Bots.enable", () => {
     const db = await freshDb();
     const bots = createBots({ db, tokenMasterKey: TEST_KEY });
     const user = await createTestUser(db);
-    const bot = await bots.create(user.id, { name: "Welcome Bot" });
-    await bots.setToken(user.id, bot.id, "secret-token");
+    const bot = unwrap(await bots.create(user.id, { name: "Welcome Bot" }));
+    unwrap(await bots.setToken(user.id, bot.id, "secret-token"));
 
-    const result = await bots.enable(user.id, bot.id);
+    const result = unwrap(await bots.enable(user.id, bot.id));
 
     expect(result.kind).toBe("ok");
     if (result.kind === "ok") {
@@ -105,9 +107,9 @@ describe("Bots.disable", () => {
     const db = await freshDb();
     const bots = createBots({ db, tokenMasterKey: TEST_KEY });
     const user = await createTestUser(db);
-    const bot = await bots.create(user.id, { name: "Welcome Bot" });
+    const bot = unwrap(await bots.create(user.id, { name: "Welcome Bot" }));
 
-    const result = await bots.disable(user.id, bot.id);
+    const result = unwrap(await bots.disable(user.id, bot.id));
 
     expect(result.kind).toBe("conflict");
     if (result.kind === "conflict") {
@@ -119,11 +121,11 @@ describe("Bots.disable", () => {
     const db = await freshDb();
     const bots = createBots({ db, tokenMasterKey: TEST_KEY });
     const user = await createTestUser(db);
-    const bot = await bots.create(user.id, { name: "Welcome Bot" });
-    await bots.setToken(user.id, bot.id, "secret-token");
-    await bots.enable(user.id, bot.id);
+    const bot = unwrap(await bots.create(user.id, { name: "Welcome Bot" }));
+    unwrap(await bots.setToken(user.id, bot.id, "secret-token"));
+    unwrap(await bots.enable(user.id, bot.id));
 
-    const result = await bots.disable(user.id, bot.id);
+    const result = unwrap(await bots.disable(user.id, bot.id));
 
     expect(result.kind).toBe("ok");
     if (result.kind === "ok") {
