@@ -25,8 +25,7 @@ export type AppDeps = {
 };
 
 function toPublicBot(bot: Bot | BotSummary) {
-  const hasToken =
-    "hasToken" in bot ? bot.hasToken : bot.discordToken !== null;
+  const hasToken = "hasToken" in bot ? bot.hasToken : bot.discordToken !== null;
   return {
     id: bot.id,
     name: bot.name,
@@ -100,7 +99,11 @@ export function createApp(deps: AppDeps) {
     const body = await validateJson(c, SetBotTokenRequest);
     if (!body.ok) return body.response;
     const userId = c.get("userId");
-    const bot = await bots.setToken(userId, parsedId.data, body.data.discordToken);
+    const bot = await bots.setToken(
+      userId,
+      parsedId.data,
+      body.data.discordToken,
+    );
     if (!bot) return notFound(c);
     return c.json(toPublicBot(bot));
   });

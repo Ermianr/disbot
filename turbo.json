@@ -18,6 +18,9 @@
     "typecheck": {
       "dependsOn": ["^build"]
     },
+    "@disbot/web#typecheck": {
+      "dependsOn": ["build"]
+    },
     "test": {
       "dependsOn": ["^build"]
     }
